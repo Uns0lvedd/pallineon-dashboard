@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4' fill='%232a78d6'/%3E%3Cpath d='M3 11l3-4 3 2 4-5' stroke='white' stroke-width='1.6' fill='none'/%3E%3C/svg%3E">
+<title>Apartment dashboard</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,.10); --wash: rgba(11,11,11,.04);
+    --up: #006300; --down: #d03b3b; --warn: #fab219;
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #4a3aa7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,.10); --wash: rgba(255,255,255,.05);
+      --up: #0ca30c; --down: #e66767; --warn: #fab219;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9;
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--page); color: var(--ink);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", "Arial Hebrew", Arial, sans-serif; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 20px 16px 56px; }
+  h1 { font-size: 22px; margin: 0; font-weight: 650; letter-spacing: -.01em; }
+  h2 { font-size: 16px; margin: 0 0 2px; font-weight: 650; }
+  .sub { color: var(--ink-2); font-size: 13px; margin: 0; }
+  .muted { color: var(--muted); }
+  header.top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; }
+  .toggles { display: flex; gap: 8px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 12px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; position: sticky; top: 8px; z-index: 5; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; padding: 2px; background: var(--page); }
+  .seg button { all: unset; cursor: pointer; padding: 5px 11px; border-radius: 7px; font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 0 0 1px var(--border); }
+  .seg button:focus-visible, select:focus-visible, .btn:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
+  select { font: inherit; font-size: 13px; color: var(--ink); background: var(--page); border: 1px solid var(--border); border-radius: 9px; padding: 6px 10px; }
+  .fxline { font-size: 12.5px; color: var(--ink-2); margin: 0 2px 16px; display: flex; flex-wrap: wrap; gap: 4px 16px; justify-content: space-between; }
+  .banner { background: var(--surface); border: 1px solid var(--warn); border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; font-size: 13.5px;
+    display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; min-width: 0; }
+  .kpi .label { font-size: 12.5px; color: var(--ink-2); }
+  .kpi .value { font-size: 26px; font-weight: 650; letter-spacing: -.02em; margin: 2px 0 4px; line-height: 1.15; }
+  .kpi .note { font-size: 12px; color: var(--muted); }
+  .delta { font-size: 12px; color: var(--ink-2); display: block; }
+  .delta b { font-weight: 600; }
+  .delta .up { color: var(--up); } .delta .down { color: var(--down); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+  .cardhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .chart { position: relative; height: 280px; }
+  .chart.small { height: 190px; }
+  .section { margin: 26px 2px 10px; }
+  .section h2 { font-size: 18px; }
+  .partners { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+  .partner .name { font-weight: 650; font-size: 15px; }
+  .partner .value { font-size: 24px; font-weight: 650; letter-spacing: -.02em; margin: 4px 0; }
+  .partner dl { margin: 6px 0 0; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; font-size: 13px; color: var(--ink-2); }
+  .partner dd { margin: 0; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .tablewrap { overflow-x: auto; margin: 0 -16px; padding: 0 16px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 7px 10px; text-align: end; white-space: nowrap; border-bottom: 1px solid var(--grid); }
+  th { font-weight: 600; color: var(--ink-2); font-size: 12px; vertical-align: bottom; }
+  th:first-child, td:first-child { text-align: start; position: sticky; inset-inline-start: 0; background: var(--surface); }
+  td.text, th.text { text-align: start; white-space: normal; }
+  tbody tr.sel td { background: var(--wash); }
+  tbody tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--s1); }
+  [dir="rtl"] tbody tr.sel td:first-child { box-shadow: inset -3px 0 0 var(--s1); }
+  tbody tr[data-month] { cursor: pointer; }
+  tfoot td { font-weight: 650; border-bottom: 0; border-top: 1px solid var(--axis); }
+  .btn { all: unset; cursor: pointer; font-size: 13px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--page); color: var(--ink); }
+  .btn:hover { background: var(--wash); }
+  a.btn { display: inline-block; }
+  .checks { list-style: none; margin: 0; padding: 0; }
+  .checks > li { padding: 9px 0; border-bottom: 1px solid var(--grid); display: grid; grid-template-columns: 22px 92px 1fr; gap: 6px; font-size: 13.5px; }
+  .checks > li:last-child { border-bottom: 0; }
+  .checks .ok { color: var(--up); font-weight: 700; } .checks .flag { color: var(--down); font-weight: 700; }
+  .checks ul { margin: 0; padding-inline-start: 18px; }
+  .drop { display: block; border: 1.5px dashed var(--axis); border-radius: 12px; padding: 22px 16px; text-align: center; color: var(--ink-2); font-size: 13.5px; cursor: pointer; }
+  .drop.over { background: var(--wash); border-color: var(--s1); }
+  .drop .err { color: var(--down); margin-top: 8px; }
+  ol.steps { margin: 6px 0 12px; padding-inline-start: 20px; font-size: 13.5px; color: var(--ink-2); }
+  ol.steps li { margin: 3px 0; }
+  code { font-size: 12.5px; background: var(--wash); padding: 1px 5px; border-radius: 5px; }
+  footer { margin-top: 28px; font-size: 12px; color: var(--muted); }
+  .empty { color: var(--muted); font-size: 13.5px; padding: 6px 0; }
+  #fatal { padding: 40px 16px; text-align: center; color: var(--ink-2); }
+  @media (max-width: 900px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .grid2, .grid3, .partners { grid-template-columns: 1fr; }
+    .kpi .value { font-size: 22px; }
+    .controls { position: static; }
+    .checks > li { grid-template-columns: 22px 1fr; } .checks > li > div:last-child { grid-column: 2; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app" hidden>
+  <header class="top">
+    <div>
+      <h1 id="title"></h1>
+      <p class="sub" id="subtitle"></p>
+    </div>
+    <div class="toggles">
+      <div class="seg" id="langSeg" role="group" aria-label="Language">
+        <button data-v="en">English</button><button data-v="he">עברית</button>
+      </div>
+      <div class="seg" id="curSeg" role="group" aria-label="Currency">
+        <button data-v="EUR">€ EUR</button><button data-v="ILS">₪ ILS</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="previewBanner" class="banner" hidden></div>
+
+  <div class="controls">
+    <div class="seg" id="scopeSeg" role="group"></div>
+    <select id="monthSel" aria-label="Month"></select>
+    <select id="platformSel" aria-label="Platform"></select>
+  </div>
+  <div class="fxline"><span id="fxText"></span><span id="updated"></span></div>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="cardhead"><div><h2 data-t="wfTitle"></h2><p class="sub" id="wfSub"></p></div></div>
+      <div class="chart" id="wfBox"><canvas id="wfChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="cardhead"><div><h2 data-t="stackTitle"></h2><p class="sub" data-t="stackSub"></p></div>
+        <div class="seg" id="stackSeg" role="group"></div></div>
+      <div class="chart" style="height:320px"><canvas id="stackChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="cardhead"><div><h2 data-t="trendTitle"></h2><p class="sub" data-t="trendSub"></p></div></div>
+    <div class="chart"><canvas id="trendChart"></canvas></div>
+  </div>
+
+  <div class="grid3">
+    <div class="card"><div class="cardhead"><div><h2 data-t="occTitle"></h2><p class="sub" data-t="occSub"></p></div></div><div class="chart small"><canvas id="occChart"></canvas></div></div>
+    <div class="card"><div class="cardhead"><div><h2 data-t="adrTitle"></h2><p class="sub" data-t="adrSub"></p></div></div><div class="chart small"><canvas id="adrChart"></canvas></div></div>
+    <div class="card"><div class="cardhead"><div><h2 data-t="shareTitle"></h2><p class="sub" data-t="shareSub"></p></div></div><div class="chart small"><canvas id="shareChart"></canvas></div></div>
+  </div>
+
+  <div class="card" id="platformCard" style="margin-bottom:12px">
+    <div class="cardhead"><div><h2 data-t="platTitle"></h2><p class="sub" id="platSub"></p></div></div>
+    <div class="chart small" id="platBox"><canvas id="platChart"></canvas></div>
+  </div>
+
+  <div class="section"><h2 data-t="partnersTitle"></h2><p class="sub" id="partnersSub"></p></div>
+  <section class="partners" id="partners"></section>
+  <div class="grid2">
+    <div class="card">
+      <div class="cardhead"><div><h2 data-t="cumTitle"></h2><p class="sub" data-t="cumSub"></p></div></div>
+      <div class="chart"><canvas id="cumChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="cardhead"><div><h2 data-t="partnerTableTitle"></h2><p class="sub" data-t="partnerTableSub"></p></div></div>
+      <div class="tablewrap"><table id="partnerTable"></table></div>
+    </div>
+  </div>
+
+  <div class="section"><h2 data-t="statementTitle"></h2><p class="sub" data-t="statementSub"></p></div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="cardhead"><div></div><button class="btn" id="csvBtn"></button></div>
+    <div class="tablewrap"><table id="statementTable"></table></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="cardhead"><div><h2 data-t="faultsTitle"></h2><p class="sub" data-t="faultsSub"></p></div></div>
+      <div class="tablewrap"><table id="faultsTable"></table></div>
+      <div class="empty" id="faultsEmpty" hidden></div>
+    </div>
+    <div class="card">
+      <div class="cardhead"><div><h2 data-t="checkTitle"></h2><p class="sub" id="checkSub"></p></div></div>
+      <ul class="checks" id="checks"></ul>
+    </div>
+  </div>
+
+  <div class="section"><h2 data-t="uploadTitle"></h2><p class="sub" data-t="uploadSub"></p></div>
+  <div class="grid2">
+    <div class="card">
+      <h2 data-t="publishTitle"></h2>
+      <ol class="steps" id="publishSteps"></ol>
+      <a class="btn" id="uploadLink" target="_blank" rel="noopener" hidden></a>
+    </div>
+    <div class="card">
+      <h2 data-t="previewTitle"></h2>
+      <p class="sub" data-t="previewSub" style="margin-bottom:10px"></p>
+      <label class="drop" id="drop" tabindex="0">
+        <input type="file" id="file" accept=".xlsx" hidden>
+        <div id="dropText"></div>
+        <div class="err" id="dropErr" hidden></div>
+      </label>
+    </div>
+  </div>
+
+  <footer id="footer"></footer>
+</div>
+<div id="fatal" hidden></div>
+
+<script src="vendor/chart.umd.js"></script>
+<script src="js/parser.js"></script>
+<script>
+(function () {
+'use strict';
+
+/* ------------------------------------------------------------------ text */
+var T = {
+  en: {
+    subtitle: 'Monthly owner statements', scopeMonth: 'Month', scopeYtd: 'Year to date', scopeAll: 'All time',
+    allPlatforms: 'All platforms', updated: 'Data updated',
+    fxMonth: '1 € = ₪{rate} · {src} reference rate, {date}', fxMulti: 'Shekel amounts convert each month at its own month-end rate (listed in the monthly statement).',
+    fxProvisional: 'provisional rate', fxNote: 'Shekel amounts are approximate: the real conversion happens when the money is transferred.',
+    ownerPayment: 'Owner payment', gross: 'Gross income', ownerShare: 'Owner share of gross', occupancy: 'Occupancy',
+    adr: 'Average nightly rate', revpar: 'Revenue per available night', orders: 'Orders', avgStay: 'Average stay',
+    nights: 'nights', nightsOf: '{n} of {d} nights', nightsBooked: '{n} nights booked', perOrder: '{v} gross per order',
+    vsPrev: 'vs {m}', vsYear: 'vs {m}', pts: 'pts', noCompare: 'No earlier period to compare',
+    commission: 'Platform commission', envFee: 'Environmental fee', vat: 'VAT', cityTax: 'City tax', mgmtFee: 'Management fee',
+    cleaning: 'Cleaning', internet: 'Internet', improvements: 'Improvements / faults',
+    gTaxes: 'Taxes and environmental fee', gOther: 'Internet and repairs',
+    wfTitle: 'From gross income to owner payment', wfSub: '{p} · every deduction on the statement', ofGross: '{v} of gross',
+    stackTitle: 'Where the gross income goes', stackSub: 'Each month split into costs and what the owners keep', amounts: 'Amount', percent: '% of gross',
+    trendTitle: 'Gross income and owner payment', trendSub: 'By month. Click a month to select it.',
+    occTitle: 'Occupancy', occSub: 'Booked nights as a share of the month', adrTitle: 'Average nightly rate', adrSub: 'Gross income per booked night',
+    shareTitle: 'Owner share of gross', shareSub: 'Owner payment as a share of gross income',
+    platTitle: 'Income by platform', platOnly: 'All income so far came through {p}. A comparison appears here once another platform has bookings.', platSub: 'Gross income per month',
+    partnersTitle: 'Partner split', partnersSub: 'Owner payment divided between the partners · {p}',
+    share: 'Share', thisPeriod: 'Selected period', yearToDate: 'Year to date {y}', allTime: 'All time', avgMonth: 'Monthly average',
+    cumTitle: 'Cumulative owner payment', cumSub: 'Running total since the first statement', total: 'Total', eachPartner: 'Each partner',
+    partnerTableTitle: 'Split by month', partnerTableSub: 'Every month on record',
+    statementTitle: 'Monthly statement', statementSub: 'Every line of every statement. Click a row to select that month.', exportCsv: 'Export CSV',
+    month: 'Month', rate: '₪ per €', nightsCol: 'Nights', nightlyRate: 'Nightly rate',
+    faultsTitle: 'Improvements and faults', faultsSub: 'Repair and upgrade charges with the manager\'s notes', amount: 'Amount', note: 'Note', noFaults: 'No improvement or fault charges so far.',
+    checkTitle: 'Statement check', checkSub: 'Each statement recomputed from the manager\'s rates: {r}',
+    ratesLine: 'environmental fee {e} per night, VAT {v}, city tax {c}, management {m}, cleaning {k} per order',
+    checkOk: 'All lines match the rates.', checkLine: '{f}: statement says {s}, the rates give {e}.',
+    checkCommission: '{p} commission was {a} of gross, where other months are {b} (about {d} more).', checkCommissionLess: '{p} commission was {a} of gross, where other months are {b} (about {d} less).',
+    checkTotal: 'Total for all platforms', manualEntry: 'Entered by hand, not from an xlsx file.', readNote: 'Reading note: {w}',
+    uploadTitle: 'Adding a new month', uploadSub: 'Publishing happens on GitHub. The preview here is only for checking a file first.',
+    publishTitle: 'Publish a statement',
+    steps: ['Open the <code>reports</code> folder of the repository on GitHub.', 'Choose "Add file", then "Upload files", and drop in the month\'s xlsx.', 'Press "Commit changes". The dashboard updates in about a minute.', 'If the file has a problem, GitHub emails you the reason and the dashboard stays as it was.'],
+    openUpload: 'Open the upload page on GitHub',
+    previewTitle: 'Preview a file', previewSub: 'See a statement in the dashboard before publishing it. Nothing is saved or shared from here.',
+    dropText: 'Drop the xlsx here, or click to choose a file', previewBanner: 'Preview only: {m} from "{f}" is shown here but is not published.', discard: 'Discard preview', reading: 'Reading the file…',
+    footer: 'Figures come from the property manager\'s monthly statements. Occupancy counts every night of the month as available.',
+    loadError: 'The dashboard data could not be loaded. If you opened this file directly from your computer, view it through GitHub Pages instead.'
+  },
+  he: {
+    subtitle: 'דוחות חודשיים לבעלים', scopeMonth: 'חודש', scopeYtd: 'מתחילת השנה', scopeAll: 'כל התקופה',
+    allPlatforms: 'כל הפלטפורמות', updated: 'הנתונים עודכנו',
+    fxMonth: '1 € = ₪{rate} · שער יציג של {src}, {date}', fxMulti: 'סכומים בשקלים מומרים לכל חודש לפי השער של סוף אותו חודש (מופיע בדוח החודשי).',
+    fxProvisional: 'שער זמני', fxNote: 'הסכומים בשקלים הם הערכה: ההמרה בפועל נעשית במועד העברת הכסף.',
+    ownerPayment: 'תשלום לבעלים', gross: 'הכנסה ברוטו', ownerShare: 'חלק הבעלים מהברוטו', occupancy: 'תפוסה',
+    adr: 'מחיר ממוצע ללילה', revpar: 'הכנסה ללילה זמין', orders: 'הזמנות', avgStay: 'שהייה ממוצעת',
+    nights: 'לילות', nightsOf: '{n} מתוך {d} לילות', nightsBooked: '{n} לילות מוזמנים', perOrder: '{v} ברוטו להזמנה',
+    vsPrev: 'לעומת {m}', vsYear: 'לעומת {m}', pts: 'נק׳', noCompare: 'אין תקופה קודמת להשוואה',
+    commission: 'עמלת פלטפורמה', envFee: 'אגרת סביבה', vat: 'מע״מ', cityTax: 'מס עירוני', mgmtFee: 'דמי ניהול',
+    cleaning: 'ניקיון', internet: 'אינטרנט', improvements: 'שיפורים / תקלות',
+    gTaxes: 'מיסים ואגרת סביבה', gOther: 'אינטרנט ותיקונים',
+    wfTitle: 'מהכנסה ברוטו לתשלום לבעלים', wfSub: '{p} · כל הניכויים שבדוח', ofGross: '{v} מהברוטו',
+    stackTitle: 'לאן הולכת ההכנסה ברוטו', stackSub: 'כל חודש מחולק לעלויות ולמה שנשאר לבעלים', amounts: 'סכום', percent: '% מהברוטו',
+    trendTitle: 'הכנסה ברוטו ותשלום לבעלים', trendSub: 'לפי חודש. לחיצה על חודש בוחרת אותו.',
+    occTitle: 'תפוסה', occSub: 'לילות מוזמנים מתוך ימי החודש', adrTitle: 'מחיר ממוצע ללילה', adrSub: 'הכנסה ברוטו ללילה מוזמן',
+    shareTitle: 'חלק הבעלים מהברוטו', shareSub: 'התשלום לבעלים כאחוז מההכנסה ברוטו',
+    platTitle: 'הכנסה לפי פלטפורמה', platOnly: 'כל ההכנסה עד כה הגיעה דרך {p}. השוואה תופיע כאן כשיהיו הזמנות מפלטפורמה נוספת.', platSub: 'הכנסה ברוטו לפי חודש',
+    partnersTitle: 'חלוקה בין השותפים', partnersSub: 'התשלום לבעלים מחולק בין השותפים · {p}',
+    share: 'חלק', thisPeriod: 'התקופה שנבחרה', yearToDate: 'מתחילת {y}', allTime: 'כל התקופה', avgMonth: 'ממוצע חודשי',
+    cumTitle: 'תשלום מצטבר לבעלים', cumSub: 'סכום מצטבר מאז הדוח הראשון', total: 'סה״כ', eachPartner: 'כל שותף',
+    partnerTableTitle: 'חלוקה לפי חודש', partnerTableSub: 'כל החודשים שנרשמו',
+    statementTitle: 'דוח חודשי', statementSub: 'כל השורות מכל הדוחות. לחיצה על שורה בוחרת את החודש.', exportCsv: 'ייצוא CSV',
+    month: 'חודש', rate: '₪ ל-€', nightsCol: 'לילות', nightlyRate: 'מחיר ללילה',
+    faultsTitle: 'שיפורים ותקלות', faultsSub: 'חיובי תיקונים ושדרוגים עם הערות חברת הניהול', amount: 'סכום', note: 'הערה', noFaults: 'אין עד כה חיובים על שיפורים או תקלות.',
+    checkTitle: 'בדיקת הדוח', checkSub: 'כל דוח מחושב מחדש לפי התעריפים של חברת הניהול: {r}',
+    ratesLine: 'אגרת סביבה {e} ללילה, מע״מ {v}, מס עירוני {c}, דמי ניהול {m}, ניקיון {k} להזמנה',
+    checkOk: 'כל השורות תואמות לתעריפים.', checkLine: '{f}: בדוח רשום {s}, לפי התעריפים יוצא {e}.',
+    checkCommission: 'עמלת {p} הייתה {a} מהברוטו, כשבשאר החודשים היא {b} (כ-{d} יותר).', checkCommissionLess: 'עמלת {p} הייתה {a} מהברוטו, כשבשאר החודשים היא {b} (כ-{d} פחות).',
+    checkTotal: 'סה״כ לכל הפלטפורמות', manualEntry: 'הוזן ידנית, לא מקובץ xlsx.', readNote: 'הערת קריאה: {w}',
+    uploadTitle: 'הוספת חודש חדש', uploadSub: 'הפרסום נעשה דרך GitHub. התצוגה המקדימה כאן נועדה רק לבדיקת הקובץ לפני כן.',
+    publishTitle: 'פרסום דוח',
+    steps: ['פותחים את התיקייה <code>reports</code> במאגר ב-GitHub.', 'בוחרים "Add file" ואז "Upload files", וגוררים את קובץ ה-xlsx של החודש.', 'לוחצים "Commit changes". הדשבורד מתעדכן בתוך כדקה.', 'אם יש בעיה בקובץ, GitHub שולח במייל את הסיבה והדשבורד נשאר כפי שהיה.'],
+    openUpload: 'פתיחת דף ההעלאה ב-GitHub',
+    previewTitle: 'תצוגה מקדימה של קובץ', previewSub: 'אפשר לראות דוח בדשבורד לפני הפרסום. שום דבר לא נשמר ולא משותף מכאן.',
+    dropText: 'גררו לכאן את קובץ ה-xlsx, או לחצו לבחירת קובץ', previewBanner: 'תצוגה מקדימה בלבד: {m} מתוך "{f}" מוצג כאן אך לא פורסם.', discard: 'ביטול התצוגה המקדימה', reading: 'קורא את הקובץ…',
+    footer: 'הנתונים מבוססים על הדוחות החודשיים של חברת הניהול. התפוסה מחושבת מתוך כל לילות החודש.',
+    loadError: 'לא ניתן לטעון את נתוני הדשבורד. אם פתחתם את הקובץ ישירות מהמחשב, יש לצפות בו דרך GitHub Pages.'
+  }
+};
+
+/* ----------------------------------------------------------------- state */
+var store = { get: function (k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } },
+              set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+var S = { lang: store.get('lang', 'en'), cur: store.get('cur', 'EUR'), scope: 'month', month: null, platform: 'all', stack: 'abs' };
+if (!T[S.lang]) S.lang = 'en';
+if (S.cur !== 'ILS') S.cur = 'EUR';
+var DATA = null, MONTHS = [], PUBLISHED = [], PREVIEW = null, charts = {};
+var COSTS = ['commission', 'envFee', 'vat', 'cityTax', 'mgmtFee', 'cleaning', 'internet', 'improvements'];
+var GROUPS = [ // fixed colour per entity, shared by the waterfall and the stacked chart
+  { key: 'ownerPayment', fields: ['ownerPayment'], color: '--s1' },
+  { key: 'commission', fields: ['commission'], color: '--s2' },
+  { key: 'gTaxes', fields: ['envFee', 'vat', 'cityTax'], color: '--s3' },
+  { key: 'mgmtFee', fields: ['mgmtFee'], color: '--s4' },
+  { key: 'cleaning', fields: ['cleaning'], color: '--s5' },
+  { key: 'gOther', fields: ['internet', 'improvements'], color: '--s6' }
+];
+var FIELD_COLOR = { gross: '--s7', ownerPayment: '--s1' };
+GROUPS.forEach(function (g) { g.fields.forEach(function (f) { FIELD_COLOR[f] = g.color; }); });
+
+function t(k, vars) {
+  var s = T[S.lang][k]; if (s == null) s = T.en[k]; if (s == null) return k;
+  if (vars) Object.keys(vars).forEach(function (v) { s = s.split('{' + v + '}').join(vars[v]); });
+  return s;
+}
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function locale() { return S.lang === 'he' ? 'he-IL' : 'en-GB'; }
+
+/* ------------------------------------------------------------ formatting */
+function money(v, digits) {
+  if (v == null || isNaN(v)) return '–';
+  if (digits == null) digits = 2;
+  return new Intl.NumberFormat(locale(), { style: 'currency', currency: S.cur, minimumFractionDigits: digits, maximumFractionDigits: digits }).format(v);
+}
+function cm(v, digits) { return money(v, digits).replace(/[\u200e\u200f]/g, ''); } // for canvas text
+function eur(v) { return new Intl.NumberFormat(locale(), { style: 'currency', currency: 'EUR' }).format(v); }
+function pct(v, digits) { if (v == null || isNaN(v)) return '–'; return new Intl.NumberFormat(locale(), { style: 'percent', minimumFractionDigits: digits == null ? 1 : digits, maximumFractionDigits: digits == null ? 1 : digits }).format(v); }
+function num(v, digits) { if (v == null || isNaN(v)) return '–'; return new Intl.NumberFormat(locale(), { maximumFractionDigits: digits || 0, minimumFractionDigits: digits || 0 }).format(v); }
+function mDate(key) { var p = key.split('-'); return new Date(Date.UTC(+p[0], +p[1] - 1, 1)); }
+function mLabel(key, style) {
+  var o = style === 'long' ? { month: 'long', year: 'numeric' } : style === 'axis' ? { month: 'short', year: '2-digit' } : { month: 'short', year: 'numeric' };
+  o.timeZone = 'UTC';
+  return new Intl.DateTimeFormat(locale(), o).format(mDate(key));
+}
+function dLabel(iso) { return new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(iso + 'T00:00:00Z')); }
+function daysIn(key) { var p = key.split('-'); return new Date(Date.UTC(+p[0], +p[1], 0)).getUTCDate(); }
+
+/* ------------------------------------------------------------------ data */
+function fxOf(m) { // month-end rate; falls back to the nearest known month
+  if (m.fx && m.fx.rate) return m.fx;
+  var best = null, bd = Infinity;
+  PUBLISHED.forEach(function (o) { if (o.fx && o.fx.rate) { var d = Math.abs(mDate(o.month) - mDate(m.month)); if (d < bd) { bd = d; best = o.fx; } } });
+  return best ? { rate: best.rate, date: best.date, source: best.source, provisional: true } : { rate: NaN, provisional: true };
+}
+function platformKeys() { var k = {}; MONTHS.forEach(function (m) { Object.keys(m.platforms).forEach(function (p) { k[p] = m.platforms[p].label || k[p] || p; }); }); return k; }
+function platLabel(k) { var s = platformKeys()[k] || k; return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); }
+function raw(m, f, platform) { // euros, one month
+  var s = 0; Object.keys(m.platforms).forEach(function (p) { if ((platform || S.platform) === 'all' || (platform || S.platform) === p) s += m.platforms[p][f] || 0; }); return s;
+}
+function agg(list, platform) {
+  var a = { n: list.length, available: 0 }, money_ = ['gross'].concat(COSTS, ['netOfCommission', 'afterFee', 'ownerPayment']);
+  money_.forEach(function (f) { a[f] = 0; }); a.nights = 0; a.orders = 0;
+  list.forEach(function (m) {
+    var k = S.cur === 'ILS' ? fxOf(m).rate : 1;
+    money_.forEach(function (f) { a[f] += raw(m, f, platform) * k; });
+    a.nights += raw(m, 'nights', platform); a.orders += raw(m, 'orders', platform);
+    a.available += daysIn(m.month) * (DATA.config.units || 1);
+  });
+  a.occupancy = a.available ? a.nights / a.available : NaN;
+  a.adr = a.nights ? a.gross / a.nights : NaN;
+  a.revpar = a.available ? a.gross / a.available : NaN;
+  a.avgStay = a.orders ? a.nights / a.orders : NaN;
+  a.ownerShare = a.gross ? a.ownerPayment / a.gross : NaN;
+  a.perOrder = a.orders ? a.gross / a.orders : NaN;
+  return a;
+}
+function find(key) { for (var i = 0; i < MONTHS.length; i++) if (MONTHS[i].month === key) return MONTHS[i]; return null; }
+function shift(key, dy, dm) { var d = mDate(key); d.setUTCFullYear(d.getUTCFullYear() + dy); d.setUTCMonth(d.getUTCMonth() + dm); return d.getUTCFullYear() + '-' + ('0' + (d.getUTCMonth() + 1)).slice(-2); }
+function scopeMonths() {
+  if (S.scope === 'all') return MONTHS;
+  if (S.scope === 'ytd') return MONTHS.filter(function (m) { return m.month.slice(0, 4) === S.month.slice(0, 4) && m.month <= S.month; });
+  return MONTHS.filter(function (m) { return m.month === S.month; });
+}
+function periodLabel() {
+  var l = scopeMonths();
+  if (S.scope === 'month' || l.length === 1) return mLabel(l[0].month, 'long');
+  return mLabel(l[0].month) + ' – ' + mLabel(l[l.length - 1].month);
+}
+function comparisons() { // [{label, list}]
+  var out = [], cur = scopeMonths();
+  if (S.scope === 'month') {
+    var p = find(shift(S.month, 0, -1)); if (p) out.push({ label: t('vsPrev', { m: mLabel(p.month) }), list: [p] });
+    var y = find(shift(S.month, -1, 0)); if (y) out.push({ label: t('vsYear', { m: mLabel(y.month) }), list: [y] });
+  } else if (S.scope === 'ytd') {
+    var prev = cur.map(function (m) { return find(shift(m.month, -1, 0)); });
+    if (prev.length && prev.every(Boolean)) out.push({ label: t('vsYear', { m: mLabel(prev[0].month) + ' – ' + mLabel(prev[prev.length - 1].month) }), list: prev });
+  }
+  return out;
+}
+
+/* ------------------------------------------------------------------ KPIs */
+function deltaHtml(cur, prev, kind, label) {
+  if (prev == null || isNaN(prev) || isNaN(cur)) return '';
+  var d, txt;
+  if (kind === 'pp') { d = (cur - prev) * 100; txt = (d >= 0 ? '+' : '−') + num(Math.abs(d), 1) + ' ' + t('pts'); }
+  else { if (!prev) return ''; d = cur / prev - 1; txt = (d >= 0 ? '+' : '−') + pct(Math.abs(d), 1); }
+  var flat = Math.abs(d) < (kind === 'pp' ? 0.05 : 0.0005);
+  var cls = flat ? '' : d > 0 ? 'up' : 'down', arrow = flat ? '•' : d > 0 ? '▲' : '▼';
+  return '<span class="delta"><b class="' + cls + '">' + arrow + ' <bdi>' + txt + '</bdi></b> ' + esc(label) + '</span>';
+}
+function renderKpis() {
+  var a = agg(scopeMonths()), comps = comparisons().map(function (c) { return { label: c.label, a: agg(c.list) }; });
+  var tiles = [
+    { k: 'ownerPayment', v: money(a.ownerPayment), f: 'ownerPayment', note: pct(a.ownerShare) + ' ' + t('ofGross', { v: '' }).trim() },
+    { k: 'gross', v: money(a.gross), f: 'gross', note: t('perOrder', { v: money(a.perOrder, 0) }) },
+    { k: 'ownerShare', v: pct(a.ownerShare), f: 'ownerShare', kind: 'pp' },
+    { k: 'occupancy', v: pct(a.occupancy, 0), f: 'occupancy', kind: 'pp', note: t('nightsOf', { n: num(a.nights), d: num(a.available) }) },
+    { k: 'adr', v: money(a.adr), f: 'adr' },
+    { k: 'revpar', v: money(a.revpar), f: 'revpar' },
+    { k: 'orders', v: num(a.orders), f: 'orders' },
+    { k: 'avgStay', v: num(a.avgStay, 1) + ' ' + t('nights'), f: 'avgStay' }
+  ];
+  tiles[0].note = t('ofGross', { v: pct(a.ownerShare) });
+  $('kpis').innerHTML = tiles.map(function (x) {
+    var d = comps.map(function (c) { return deltaHtml(a[x.f], c.a[x.f], x.kind, c.label); }).join('');
+    return '<div class="card kpi"><div class="label">' + esc(t(x.k)) + '</div><div class="value"><bdi>' + esc(x.v) + '</bdi></div>' +
+      (x.note ? '<div class="note">' + esc(x.note) + '</div>' : '') + d + '</div>';
+  }).join('');
+}
+
+/* ---------------------------------------------------------------- charts */
+function baseOptions() {
+  var rtl = S.lang === 'he';
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  Chart.defaults.font.size = 12;
+  Chart.defaults.color = css('--muted');
+  return {
+    responsive: true, maintainAspectRatio: false, animation: false, locale: locale(),
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false, position: 'bottom', rtl: rtl, textDirection: rtl ? 'rtl' : 'ltr',
+        labels: { color: css('--ink-2'), boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: 'rectRounded', padding: 14 } },
+      tooltip: { rtl: rtl, textDirection: rtl ? 'rtl' : 'ltr', backgroundColor: css('--ink'), titleColor: css('--surface'), bodyColor: css('--surface'),
+        padding: 10, cornerRadius: 8, boxPadding: 4, usePointStyle: true }
+    },
+    scales: {
+      x: { grid: { display: false }, border: { color: css('--axis') }, ticks: { color: css('--muted') } },
+      y: { grid: { color: css('--grid') }, border: { display: false }, ticks: { color: css('--muted'), maxTicksLimit: 6 }, beginAtZero: true }
+    }
+  };
+}
+function lineSet(label, data, colorVar) {
+  var c = css(colorVar);
+  return { label: label, data: data, borderColor: c, backgroundColor: c, borderWidth: 2, tension: 0, pointRadius: 4, pointHoverRadius: 6,
+    pointBorderColor: css('--surface'), pointBorderWidth: 2, clip: false };
+}
+// Labels the last point of each line (selective direct labelling).
+var endLabels = { id: 'endLabels', afterDatasetsDraw: function (chart, _a, opts) {
+  if (!opts || !opts.format) return;
+  var ctx = chart.ctx, used = [];
+  chart.data.datasets.forEach(function (ds, i) {
+    var meta = chart.getDatasetMeta(i); if (meta.hidden || !meta.data.length || meta.type !== 'line') return;
+    var pt = meta.data[meta.data.length - 1], v = ds.data[ds.data.length - 1]; if (v == null || isNaN(v)) return;
+    var y = pt.y; used.forEach(function (u) { if (Math.abs(u - y) < 14) y = u + (y >= u ? 14 : -14); }); used.push(y);
+    ctx.save(); ctx.font = '600 12px ' + Chart.defaults.font.family; ctx.fillStyle = css('--ink'); ctx.direction = 'ltr'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(opts.format(v), pt.x + 9, y); ctx.restore();
+  });
+} };
+var barLabels = { id: 'barLabels', afterDatasetsDraw: function (chart, _a, opts) {
+  if (!opts || !opts.labels) return;
+  var ctx = chart.ctx, meta = chart.getDatasetMeta(0), rtl = !!opts.rtl;
+  meta.data.forEach(function (bar, i) {
+    var a = Math.min(bar.x, bar.base), b = Math.max(bar.x, bar.base);
+    ctx.save(); ctx.font = '600 12px ' + Chart.defaults.font.family; ctx.fillStyle = css('--ink'); ctx.textBaseline = 'middle'; ctx.direction = 'ltr';
+    ctx.textAlign = rtl ? 'right' : 'left';
+    ctx.fillText(opts.labels[i], rtl ? a - 6 : b + 6, bar.y); ctx.restore();
+  });
+} };
+function draw(id, config) { if (charts[id]) charts[id].destroy(); charts[id] = new Chart($(id), config); }
+function selectOnClick(keys) { return function (_e, els) { if (els && els.length) { S.month = keys[els[0].index]; if (S.scope === 'all') S.scope = 'month'; render(); } }; }
+
+function renderWaterfall() {
+  var a = agg(scopeMonths()), rtl = S.lang === 'he';
+  $('wfSub').textContent = t('wfSub', { p: periodLabel() });
+  var rows = [{ f: 'gross', from: 0, to: a.gross, total: true }], run = a.gross;
+  COSTS.forEach(function (f) { if (Math.abs(a[f]) > 0.004) { rows.push({ f: f, from: run - a[f], to: run, v: a[f] }); run -= a[f]; } });
+  rows.push({ f: 'ownerPayment', from: 0, to: a.ownerPayment, total: true });
+  var o = baseOptions();
+  o.indexAxis = 'y'; o.interaction = { mode: 'nearest', axis: 'y', intersect: false };
+  o.layout = { padding: rtl ? { left: 78 } : { right: 78 } };
+  o.scales.x = { reverse: rtl, grid: { color: css('--grid') }, border: { display: false }, beginAtZero: true,
+    ticks: { color: css('--muted'), maxTicksLimit: 4, maxRotation: 0, callback: function (v) { return cm(v, 0); } } };
+  o.scales.y = { position: rtl ? 'right' : 'left', grid: { display: false }, border: { color: css('--axis') }, ticks: { color: css('--ink-2'), font: { size: 12.5 } } };
+  o.plugins.tooltip.callbacks = {
+    label: function (c) { var r = rows[c.dataIndex], v = r.total ? r.to : r.v; return ' ' + (r.total ? '' : '−') + money(v) + ' · ' + t('ofGross', { v: pct(a.gross ? v / a.gross : NaN) }); }
+  };
+  o.plugins.barLabels = { rtl: rtl, labels: rows.map(function (r) { return r.total ? cm(r.to, 0) : '−' + cm(r.v, 0); }) };
+  $('wfBox').style.height = (rows.length * 34 + 40) + 'px';
+  draw('wfChart', { type: 'bar', plugins: [barLabels], options: o, data: {
+    labels: rows.map(function (r) { return t(r.f); }),
+    datasets: [{ data: rows.map(function (r) { return [r.from, r.to]; }), backgroundColor: rows.map(function (r) { return css(FIELD_COLOR[r.f]); }),
+      borderRadius: 4, borderSkipped: false, barThickness: 18 }]
+  } });
+}
+
+function renderStack() {
+  var keys = MONTHS.map(function (m) { return m.month; }), per = MONTHS.map(function (m) { return agg([m]); }), pc = S.stack === 'pct';
+  var o = baseOptions();
+  o.plugins.legend.display = true; o.onClick = selectOnClick(keys);
+  o.scales.x.stacked = true; o.scales.y.stacked = true;
+  o.scales.y.ticks.callback = function (v) { return pc ? pct(v, 0) : cm(v, 0); };
+  if (pc) o.scales.y.max = 1;
+  o.plugins.tooltip.callbacks = { label: function (c) { var a = per[c.dataIndex], v = c.dataset.rawValues[c.dataIndex];
+    return ' ' + c.dataset.label + ': ' + money(v) + ' (' + pct(a.gross ? v / a.gross : NaN) + ')'; } };
+  draw('stackChart', { type: 'bar', options: o, data: {
+    labels: keys.map(function (k) { return mLabel(k, 'axis'); }),
+    datasets: GROUPS.map(function (g) {
+      var vals = per.map(function (a) { return g.fields.reduce(function (s, f) { return s + a[f]; }, 0); });
+      return { label: t(g.key), rawValues: vals, data: vals.map(function (v, i) { return pc ? (per[i].gross ? v / per[i].gross : 0) : v; }),
+        backgroundColor: css(g.color), borderColor: css('--surface'), borderWidth: { top: 2, right: 0, bottom: 0, left: 0 }, maxBarThickness: 44 };
+    })
+  } });
+}
+
+function renderTrend() {
+  var keys = MONTHS.map(function (m) { return m.month; }), per = MONTHS.map(function (m) { return agg([m]); });
+  var o = baseOptions();
+  o.plugins.legend.display = true; o.onClick = selectOnClick(keys);
+  o.layout = { padding: { right: 70 } };
+  o.scales.x.offset = true;
+  o.scales.y.ticks.callback = function (v) { return cm(v, 0); };
+  o.plugins.tooltip.callbacks = { label: function (c) { return ' ' + c.dataset.label + ': ' + money(c.parsed.y); } };
+  o.plugins.endLabels = { format: function (v) { return cm(v, 0); } };
+  draw('trendChart', { type: 'line', plugins: [endLabels], options: o, data: {
+    labels: keys.map(function (k) { return mLabel(k, 'axis'); }),
+    datasets: [lineSet(t('gross'), per.map(function (a) { return a.gross; }), '--s7'), lineSet(t('ownerPayment'), per.map(function (a) { return a.ownerPayment; }), '--s1')]
+  } });
+
+  function small(id, field, fmt, tick, color, max) {
+    var s = baseOptions(); s.onClick = selectOnClick(keys); s.layout = { padding: { right: 56, top: 8 } }; s.scales.x.offset = true;
+    s.scales.y.ticks.callback = tick; s.scales.y.ticks.maxTicksLimit = 4; if (max) s.scales.y.max = max;
+    s.plugins.tooltip.callbacks = { label: function (c) { return ' ' + fmt(c.parsed.y); } };
+    s.plugins.endLabels = { format: fmt };
+    draw(id, { type: 'line', plugins: [endLabels], options: s, data: { labels: keys.map(function (k) { return mLabel(k, 'axis'); }),
+      datasets: [lineSet(t(field), per.map(function (a) { return a[field]; }), color)] } });
+  }
+  small('occChart', 'occupancy', function (v) { return pct(v, 0); }, function (v) { return pct(v, 0); }, '--s1', 1);
+  small('adrChart', 'adr', function (v) { return cm(v, 2); }, function (v) { return cm(v, 0); }, '--s1');
+  small('shareChart', 'ownerShare', function (v) { return pct(v, 1); }, function (v) { return pct(v, 0); }, '--s1');
+}
+
+function renderPlatforms() {
+  var names = platformKeys(), active = Object.keys(names).filter(function (p) { return MONTHS.some(function (m) { return (m.platforms[p] || {}).gross > 0; }); });
+  if (active.length < 2) {
+    $('platBox').hidden = true; if (charts.platChart) { charts.platChart.destroy(); delete charts.platChart; }
+    $('platSub').textContent = t('platOnly', { p: active.length ? platLabel(active[0]) : '–' }); return;
+  }
+  $('platBox').hidden = false; $('platSub').textContent = t('platSub');
+  var keys = MONTHS.map(function (m) { return m.month; }), slots = ['--s1', '--s2', '--s3', '--s4'];
+  var o = baseOptions(); o.plugins.legend.display = true; o.scales.x.stacked = true; o.scales.y.stacked = true;
+  o.scales.y.ticks.callback = function (v) { return cm(v, 0); };
+  o.plugins.tooltip.callbacks = { label: function (c) { return ' ' + c.dataset.label + ': ' + money(c.parsed.y); } };
+  draw('platChart', { type: 'bar', options: o, data: { labels: keys.map(function (k) { return mLabel(k, 'axis'); }),
+    datasets: Object.keys(names).slice(0, 4).map(function (p, i) { return { label: platLabel(p), data: MONTHS.map(function (m) { return agg([m], p).gross; }),
+      backgroundColor: css(slots[i]), borderColor: css('--surface'), borderWidth: { top: 2, right: 0, bottom: 0, left: 0 }, maxBarThickness: 44 }; }) } });
+}
+
+/* -------------------------------------------------------------- partners */
+function pName(p) { return p.name[S.lang] || p.name.en; }
+function renderPartners() {
+  var partners = DATA.config.partners, cur = agg(scopeMonths()), all = agg(MONTHS);
+  var year = S.month.slice(0, 4), ytd = agg(MONTHS.filter(function (m) { return m.month.slice(0, 4) === year && m.month <= S.month; }));
+  $('partnersSub').textContent = t('partnersSub', { p: periodLabel() });
+  $('partners').innerHTML = partners.map(function (p) {
+    return '<div class="card partner"><div class="name">' + esc(pName(p)) + ' <span class="muted" style="font-weight:400">· ' + pct(p.share, 2) + '</span></div>' +
+      '<div class="value"><bdi>' + money(cur.ownerPayment * p.share) + '</bdi></div><div class="sub">' + esc(periodLabel()) + '</div><dl>' +
+      '<dt>' + esc(t('yearToDate', { y: year })) + '</dt><dd><bdi>' + money(ytd.ownerPayment * p.share) + '</bdi></dd>' +
+      '<dt>' + esc(t('allTime')) + '</dt><dd><bdi>' + money(all.ownerPayment * p.share) + '</bdi></dd>' +
+      '<dt>' + esc(t('avgMonth')) + '</dt><dd><bdi>' + money(all.n ? all.ownerPayment * p.share / all.n : NaN) + '</bdi></dd></dl></div>';
+  }).join('');
+
+  var keys = MONTHS.map(function (m) { return m.month; }), run = 0, cum = MONTHS.map(function (m) { run += agg([m]).ownerPayment; return run; });
+  var equal = partners.every(function (p) { return Math.abs(p.share - partners[0].share) < 1e-9; }), slots = ['--s2', '--s3', '--s4', '--s5', '--s6'];
+  var sets = [lineSet(t('total'), cum, '--s1')];
+  if (equal) sets.push(lineSet(t('eachPartner') + ' (' + pct(partners[0].share, 1) + ')', cum.map(function (v) { return v * partners[0].share; }), '--s2'));
+  else partners.slice(0, 5).forEach(function (p, i) { sets.push(lineSet(pName(p), cum.map(function (v) { return v * p.share; }), slots[i])); });
+  var o = baseOptions(); o.plugins.legend.display = true; o.layout = { padding: { right: 70 } }; o.scales.x.offset = true;
+  o.scales.y.ticks.callback = function (v) { return cm(v, 0); };
+  o.plugins.tooltip.callbacks = { label: function (c) { return ' ' + c.dataset.label + ': ' + money(c.parsed.y); } };
+  o.plugins.endLabels = { format: function (v) { return cm(v, 0); } };
+  draw('cumChart', { type: 'line', plugins: [endLabels], options: o, data: { labels: keys.map(function (k) { return mLabel(k, 'axis'); }), datasets: sets } });
+
+  var head = '<thead><tr><th>' + esc(t('month')) + '</th><th>' + esc(t('total')) + '</th>' + partners.map(function (p) { return '<th>' + esc(pName(p)) + '</th>'; }).join('') + '</tr></thead>';
+  var body = MONTHS.slice().reverse().map(function (m) { var a = agg([m]);
+    return '<tr data-month="' + m.month + '" class="' + (inScope(m) ? 'sel' : '') + '"><td>' + esc(mLabel(m.month)) + '</td><td><bdi>' + money(a.ownerPayment) + '</bdi></td>' +
+      partners.map(function (p) { return '<td><bdi>' + money(a.ownerPayment * p.share) + '</bdi></td>'; }).join('') + '</tr>'; }).join('');
+  var foot = '<tfoot><tr><td>' + esc(t('total')) + '</td><td><bdi>' + money(all.ownerPayment) + '</bdi></td>' + partners.map(function (p) { return '<td><bdi>' + money(all.ownerPayment * p.share) + '</bdi></td>'; }).join('') + '</tr></tfoot>';
+  $('partnerTable').innerHTML = head + '<tbody>' + body + '</tbody>' + foot;
+}
+function inScope(m) { return scopeMonths().indexOf(m) >= 0; }
+
+/* ---------------------------------------------------------------- tables */
+function statementColumns() {
+  return [
+    { h: t('nightsCol'), v: function (a) { return num(a.nights); }, c: function (a) { return a.nights; } },
+    { h: t('orders'), v: function (a) { return num(a.orders); }, c: function (a) { return a.orders; } },
+    { h: t('occupancy'), v: function (a) { return pct(a.occupancy, 0); }, c: function (a) { return (a.occupancy * 100).toFixed(1) + '%'; } },
+    { h: t('nightlyRate'), v: function (a) { return money(a.adr); }, c: function (a) { return a.adr.toFixed(2); } }
+  ].concat(['gross'].concat(COSTS, ['ownerPayment']).map(function (f) {
+    return { h: t(f), v: function (a) { return money(a[f]); }, c: function (a) { return a[f].toFixed(2); } };
+  }), [{ h: t('ownerShare'), v: function (a) { return pct(a.ownerShare); }, c: function (a) { return (a.ownerShare * 100).toFixed(1) + '%'; } }]);
+}
+function renderStatement() {
+  var cols = statementColumns(), all = agg(MONTHS);
+  var head = '<thead><tr><th>' + esc(t('month')) + '</th>' + cols.map(function (c) { return '<th>' + esc(c.h) + '</th>'; }).join('') + '<th>' + esc(t('rate')) + '</th></tr></thead>';
+  var body = MONTHS.slice().reverse().map(function (m) { var a = agg([m]), fx = fxOf(m);
+    return '<tr data-month="' + m.month + '" class="' + (inScope(m) ? 'sel' : '') + '"><td>' + esc(mLabel(m.month)) + '</td>' +
+      cols.map(function (c) { return '<td><bdi>' + c.v(a) + '</bdi></td>'; }).join('') + '<td><bdi>' + num(fx.rate, 4) + (fx.provisional ? '*' : '') + '</bdi></td></tr>'; }).join('');
+  var foot = '<tfoot><tr><td>' + esc(t('total')) + '</td>' + cols.map(function (c) { return '<td><bdi>' + c.v(all) + '</bdi></td>'; }).join('') + '<td></td></tr></tfoot>';
+  $('statementTable').innerHTML = head + '<tbody>' + body + '</tbody>' + foot;
+  $('csvBtn').textContent = t('exportCsv');
+}
+function exportCsv() {
+  var cols = statementColumns(), q = function (s) { return '"' + String(s).replace(/"/g, '""') + '"'; };
+  var lines = [[t('month')].concat(cols.map(function (c) { return c.h; }), ['EUR/ILS']).map(q).join(',')];
+  MONTHS.forEach(function (m) { var a = agg([m]); lines.push([m.month].concat(cols.map(function (c) { return c.c(a); }), [fxOf(m).rate]).map(q).join(',')); });
+  var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'statement-' + S.cur + '.csv'; document.body.appendChild(a); a.click(); a.remove();
+}
+function renderFaults() {
+  var rows = [];
+  MONTHS.slice().reverse().forEach(function (m) { Object.keys(m.platforms).forEach(function (p) { var x = m.platforms[p];
+    if (x.improvements) rows.push('<tr><td>' + esc(mLabel(m.month)) + '</td><td><bdi>' + money(x.improvements * (S.cur === 'ILS' ? fxOf(m).rate : 1)) + '</bdi></td><td class="text" dir="auto">' + esc(x.note || '–') + '</td></tr>'); }); });
+  $('faultsTable').hidden = !rows.length; $('faultsEmpty').hidden = !!rows.length; $('faultsEmpty').textContent = t('noFaults');
+  $('faultsTable').innerHTML = '<thead><tr><th>' + esc(t('month')) + '</th><th>' + esc(t('amount')) + '</th><th class="text">' + esc(t('note')) + '</th></tr></thead><tbody>' + rows.join('') + '</tbody>';
+}
+function median(a) { var s = a.slice().sort(function (x, y) { return x - y; }), n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : NaN; }
+function renderChecks() {
+  var latest = MONTHS[MONTHS.length - 1].rates || {};
+  $('checkSub').textContent = t('checkSub', { r: t('ratesLine', { e: eur(latest.envFeePerNight), v: pct(latest.vat, 0), c: pct(latest.cityTax, 1), m: pct(latest.mgmtFee, 0), k: eur(latest.cleaningPerOrder) }) });
+  var usual = {}; // typical commission share per platform, where the sheet states no rate
+  Object.keys(platformKeys()).forEach(function (p) { usual[p] = median(MONTHS.filter(function (m) { return (m.platforms[p] || {}).gross > 0; }).map(function (m) { return m.platforms[p].commission / m.platforms[p].gross; })); });
+  $('checks').innerHTML = MONTHS.slice().reverse().map(function (m) {
+    var items = (m.checks || []).map(function (c) { return t('checkLine', { f: (c.field === 'total' ? t('checkTotal') : t(c.field)) + (c.platform !== 'all' ? ' (' + platLabel(c.platform) + ')' : ''), s: eur(c.stated), e: eur(c.expected) }); });
+    Object.keys(m.platforms).forEach(function (p) { var x = m.platforms[p]; if (!(x.gross > 0) || isNaN(usual[p])) return;
+      var r = x.commission / x.gross, diff = x.commission - usual[p] * x.gross;
+      if (Math.abs(r - usual[p]) > 0.003) items.push(t(diff > 0 ? 'checkCommission' : 'checkCommissionLess', { p: platLabel(p), a: pct(r, 2), b: pct(usual[p], 2), d: eur(Math.abs(diff)) })); });
+    var notes = []; if (m.manual) notes.push(t('manualEntry'));
+    var ok = !items.length;
+    return '<li><span class="' + (ok ? 'ok' : 'flag') + '">' + (ok ? '✓' : '!') + '</span><b>' + esc(mLabel(m.month)) + '</b><div>' +
+      (ok ? esc(t('checkOk')) : '<ul>' + items.map(function (i) { return '<li>' + esc(i) + '</li>'; }).join('') + '</ul>') +
+      notes.map(function (n) { return '<div class="muted" style="font-size:12.5px" dir="auto">' + esc(n) + '</div>'; }).join('') + '</div></li>';
+  }).join('');
+}
+
+/* ------------------------------------------------------------ chrome etc */
+function seg(id, options, current, onPick) {
+  var el = $(id);
+  if (options) el.innerHTML = options.map(function (o) { return '<button data-v="' + o[0] + '">' + esc(o[1]) + '</button>'; }).join('');
+  Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) {
+    b.setAttribute('aria-pressed', String(b.dataset.v === current));
+    b.onclick = function () { onPick(b.dataset.v); };
+  });
+}
+function renderChrome() {
+  document.documentElement.lang = S.lang; document.documentElement.dir = S.lang === 'he' ? 'rtl' : 'ltr';
+  var name = DATA.config.propertyName[S.lang] || DATA.config.propertyName.en;
+  document.title = name; $('title').textContent = name; $('subtitle').textContent = t('subtitle');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-t]'), function (el) { el.textContent = t(el.dataset.t); });
+  seg('langSeg', null, S.lang, function (v) { S.lang = v; store.set('lang', v); render(); });
+  seg('curSeg', null, S.cur, function (v) { S.cur = v; store.set('cur', v); render(); });
+  seg('scopeSeg', [['month', t('scopeMonth')], ['ytd', t('scopeYtd')], ['all', t('scopeAll')]], S.scope, function (v) { S.scope = v; render(); });
+  seg('stackSeg', [['abs', t('amounts')], ['pct', t('percent')]], S.stack, function (v) { S.stack = v; render(); });
+  var ms = $('monthSel'); ms.innerHTML = MONTHS.slice().reverse().map(function (m) { return '<option value="' + m.month + '">' + esc(mLabel(m.month, 'long')) + (m.preview ? ' *' : '') + '</option>'; }).join('');
+  ms.value = S.month; ms.disabled = S.scope === 'all'; ms.onchange = function () { S.month = ms.value; render(); };
+  var names = platformKeys(), ps = $('platformSel');
+  ps.innerHTML = '<option value="all">' + esc(t('allPlatforms')) + '</option>' + Object.keys(names).map(function (p) { return '<option value="' + p + '">' + esc(platLabel(p)) + '</option>'; }).join('');
+  ps.value = S.platform; ps.onchange = function () { S.platform = ps.value; render(); };
+
+  var fxText;
+  if (S.scope === 'month') { var fx = fxOf(find(S.month));
+    fxText = t('fxMonth', { rate: num(fx.rate, 4), src: fx.source || 'ECB', date: fx.date ? dLabel(fx.date) : '–' }) + (fx.provisional ? ' (' + t('fxProvisional') + ')' : '');
+  } else fxText = t('fxMulti');
+  if (S.cur === 'ILS') fxText += ' ' + t('fxNote');
+  $('fxText').textContent = fxText;
+  $('updated').textContent = t('updated') + ': ' + new Intl.DateTimeFormat(locale(), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(DATA.generatedAt));
+
+  $('publishSteps').innerHTML = t('steps').map(function (s) { return '<li>' + s + '</li>'; }).join('');
+  var repo = DATA.config.repoUrl || '', host = location.hostname.match(/^([^.]+)\.github\.io$/);
+  if (!repo && host) { var seg1 = location.pathname.split('/').filter(Boolean)[0]; repo = 'https://github.com/' + host[1] + '/' + (seg1 || host[0]); }
+  var link = $('uploadLink'); link.hidden = !repo; if (repo) { link.href = repo.replace(/\/$/, '') + '/upload/main/reports'; link.textContent = t('openUpload') + ' ↗'; }
+  $('dropText').textContent = t('dropText'); $('footer').textContent = t('footer');
+  var pb = $('previewBanner'); pb.hidden = !PREVIEW;
+  if (PREVIEW) { pb.innerHTML = '<span>' + esc(t('previewBanner', { m: mLabel(PREVIEW.month, 'long'), f: PREVIEW.source })) + '</span><button class="btn" id="discardBtn">' + esc(t('discard')) + '</button>';
+    $('discardBtn').onclick = function () { PREVIEW = null; rebuildMonths(); render(); }; }
+}
+function render() {
+  if (!find(S.month)) S.month = MONTHS[MONTHS.length - 1].month;
+  renderChrome(); renderKpis(); renderWaterfall(); renderStack(); renderTrend(); renderPlatforms(); renderPartners(); renderStatement(); renderFaults(); renderChecks();
+}
+function rebuildMonths() {
+  MONTHS = PUBLISHED.slice();
+  if (PREVIEW) { MONTHS = MONTHS.filter(function (m) { return m.month !== PREVIEW.month; }); MONTHS.push(PREVIEW); }
+  MONTHS.sort(function (a, b) { return a.month < b.month ? -1 : 1; });
+}
+
+/* -------------------------------------------------------- local preview */
+function loadScript(src) { return new Promise(function (ok, bad) { if (window.XLSX) return ok(); var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = bad; document.head.appendChild(s); }); }
+function previewFile(file) {
+  var err = $('dropErr'); err.hidden = true; $('dropText').textContent = t('reading');
+  loadScript('vendor/xlsx.full.min.js').then(function () { return file.arrayBuffer(); }).then(function (buf) {
+    var opts = Object.assign({ type: 'array' }, ReportParser.READ_OPTIONS);
+    var m = ReportParser.parseWorkbook(XLSX, XLSX.read(new Uint8Array(buf), opts), file.name);
+    m.preview = true; m.fx = null; PREVIEW = m; rebuildMonths(); S.month = m.month; S.scope = 'month'; render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }).catch(function (e) { $('dropText').textContent = t('dropText'); err.hidden = false; err.textContent = e && e.message ? e.message : String(e); });
+}
+function wireUpload() {
+  var drop = $('drop'), file = $('file');
+  file.onchange = function () { if (file.files[0]) previewFile(file.files[0]); file.value = ''; };
+  drop.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); file.click(); } };
+  ['dragenter', 'dragover'].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (e) { var f = e.dataTransfer && e.dataTransfer.files[0]; if (f) previewFile(f); });
+  $('csvBtn').onclick = exportCsv;
+  document.addEventListener('click', function (e) { var tr = e.target.closest && e.target.closest('tr[data-month]'); if (tr) { S.month = tr.dataset.month; if (S.scope === 'all') S.scope = 'month'; render(); } });
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { if (DATA) render(); });
+}
+
+/* ------------------------------------------------------------------ boot */
+fetch('data.json?v=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+  if (!d.months || !d.months.length) throw new Error('empty');
+  DATA = d; PUBLISHED = d.months; rebuildMonths(); S.month = MONTHS[MONTHS.length - 1].month;
+  $('app').hidden = false; wireUpload(); render();
+}).catch(function () { var f = $('fatal'); f.hidden = false; f.textContent = T[S.lang].loadError; });
+})();
+</script>
+</body>
+</html>

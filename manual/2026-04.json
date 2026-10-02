@@ -1,0 +1,10 @@
+{
+  "month": "2026-04",
+  "comment": "Entered by hand from the April 2026 PDF statement.",
+  "rates": { "envFeePerNight": 8, "vat": 0.13, "cityTax": 0.005, "mgmtFee": 0.2, "cleaningPerOrder": 35, "commission": { "booking": 0.15 } },
+  "statedTotal": 448.63,
+  "platforms": {
+    "airbnb": { "label": "AIRBNB", "gross": 1296.00, "commission": 200.89, "netOfCommission": 1095.11, "nights": 16, "envFee": 128.00, "afterFee": 967.11, "vat": 125.72, "cityTax": 4.84, "mgmtFee": 184.02, "orders": 5, "cleaning": 175.00, "internet": 28.90, "improvements": 0, "ownerPayment": 448.63 },
+    "booking": { "label": "Booking", "gross": 0, "commission": 0, "netOfCommission": 0, "nights": 0, "envFee": 0, "afterFee": 0, "vat": 0, "cityTax": 0, "mgmtFee": 0, "orders": 0, "cleaning": 0, "internet": 0, "improvements": 0, "ownerPayment": 0 }
+  }
+}

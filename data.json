@@ -1,0 +1,340 @@
+{
+  "generatedAt": "2026-10-02T21:59:16.554Z",
+  "config": {
+    "propertyName": {
+      "en": "Pallineon · Room 1",
+      "he": "Pallineon · חדר 1"
+    },
+    "units": 1,
+    "repoUrl": "",
+    "partners": [
+      {
+        "name": {
+          "en": "Yuval",
+          "he": "יובל"
+        },
+        "weight": 1,
+        "share": 0.3333333333333333
+      },
+      {
+        "name": {
+          "en": "Guy",
+          "he": "גיא"
+        },
+        "weight": 1,
+        "share": 0.3333333333333333
+      },
+      {
+        "name": {
+          "en": "Dganit",
+          "he": "דגנית"
+        },
+        "weight": 1,
+        "share": 0.3333333333333333
+      }
+    ]
+  },
+  "months": [
+    {
+      "month": "2026-04",
+      "source": "manual/2026-04.json",
+      "manual": true,
+      "rates": {
+        "envFeePerNight": 8,
+        "vat": 0.13,
+        "cityTax": 0.005,
+        "mgmtFee": 0.2,
+        "cleaningPerOrder": 35,
+        "commission": {
+          "booking": 0.15
+        }
+      },
+      "platforms": {
+        "airbnb": {
+          "label": "AIRBNB",
+          "gross": 1296,
+          "commission": 200.89,
+          "netOfCommission": 1095.11,
+          "nights": 16,
+          "envFee": 128,
+          "afterFee": 967.11,
+          "vat": 125.72,
+          "cityTax": 4.84,
+          "mgmtFee": 184.02,
+          "orders": 5,
+          "cleaning": 175,
+          "internet": 28.9,
+          "improvements": 0,
+          "ownerPayment": 448.63
+        },
+        "booking": {
+          "label": "Booking",
+          "gross": 0,
+          "commission": 0,
+          "netOfCommission": 0,
+          "nights": 0,
+          "envFee": 0,
+          "afterFee": 0,
+          "vat": 0,
+          "cityTax": 0,
+          "mgmtFee": 0,
+          "orders": 0,
+          "cleaning": 0,
+          "internet": 0,
+          "improvements": 0,
+          "ownerPayment": 0
+        }
+      },
+      "statedTotal": 448.63,
+      "warnings": [],
+      "ownerPayment": 448.63,
+      "checks": [],
+      "fx": {
+        "rate": 3.4553,
+        "date": "2026-04-30",
+        "source": "ECB"
+      }
+    },
+    {
+      "month": "2026-05",
+      "source": "PALLINEON_ROOM_1_MAY_2026.xlsx",
+      "rates": {
+        "envFeePerNight": 8,
+        "vat": 0.13,
+        "cityTax": 0.005,
+        "mgmtFee": 0.2,
+        "cleaningPerOrder": 35,
+        "commission": {
+          "booking": 0.15
+        }
+      },
+      "platforms": {
+        "airbnb": {
+          "gross": 2172,
+          "commission": 336.68,
+          "netOfCommission": 1835.32,
+          "nights": 26,
+          "envFee": 208,
+          "afterFee": 1627.32,
+          "vat": 211.55,
+          "cityTax": 8.14,
+          "mgmtFee": 304.06,
+          "orders": 9,
+          "cleaning": 315,
+          "internet": 28.9,
+          "improvements": 0,
+          "ownerPayment": 759.67,
+          "label": "AIRBNB"
+        },
+        "booking": {
+          "gross": 0,
+          "commission": 0,
+          "netOfCommission": 0,
+          "nights": 0,
+          "envFee": 0,
+          "afterFee": 0,
+          "vat": 0,
+          "cityTax": 0,
+          "mgmtFee": 0,
+          "orders": 0,
+          "cleaning": 0,
+          "internet": 0,
+          "improvements": 0,
+          "ownerPayment": 0,
+          "label": "Booking"
+        }
+      },
+      "statedTotal": 759.67,
+      "warnings": [],
+      "ownerPayment": 759.67,
+      "checks": [],
+      "fx": {
+        "rate": 3.2682,
+        "date": "2026-05-29",
+        "source": "ECB"
+      }
+    },
+    {
+      "month": "2026-06",
+      "source": "PALLINEON_ROOM_1_GUY_JUNE_2026.xlsx",
+      "rates": {
+        "envFeePerNight": 8,
+        "vat": 0.13,
+        "cityTax": 0.005,
+        "mgmtFee": 0.2,
+        "cleaningPerOrder": 35,
+        "commission": {
+          "booking": 0.15
+        }
+      },
+      "platforms": {
+        "airbnb": {
+          "gross": 2432,
+          "commission": 396.97,
+          "netOfCommission": 2035.03,
+          "nights": 26,
+          "envFee": 208,
+          "afterFee": 1827.03,
+          "vat": 237.51,
+          "cityTax": 9.14,
+          "mgmtFee": 358.01,
+          "orders": 7,
+          "cleaning": 245,
+          "internet": 28.9,
+          "improvements": 0,
+          "ownerPayment": 948.47,
+          "label": "AIRBNB"
+        },
+        "booking": {
+          "gross": 0,
+          "commission": 0,
+          "netOfCommission": 0,
+          "nights": 0,
+          "envFee": 0,
+          "afterFee": 0,
+          "vat": 0,
+          "cityTax": 0,
+          "mgmtFee": 0,
+          "orders": 0,
+          "cleaning": 0,
+          "internet": 0,
+          "improvements": 0,
+          "ownerPayment": 0,
+          "label": "Booking"
+        }
+      },
+      "statedTotal": 948.47,
+      "warnings": [],
+      "ownerPayment": 948.47,
+      "checks": [],
+      "fx": {
+        "rate": 3.3953,
+        "date": "2026-06-30",
+        "source": "ECB"
+      }
+    },
+    {
+      "month": "2026-07",
+      "source": "PALLINEON_R_1_GUY_JULY_2026.xlsx",
+      "rates": {
+        "envFeePerNight": 8,
+        "vat": 0.13,
+        "cityTax": 0.005,
+        "mgmtFee": 0.2,
+        "cleaningPerOrder": 35,
+        "commission": {
+          "booking": 0.15
+        }
+      },
+      "platforms": {
+        "airbnb": {
+          "gross": 2346,
+          "commission": 363.63,
+          "netOfCommission": 1982.37,
+          "nights": 28,
+          "envFee": 224,
+          "afterFee": 1758.37,
+          "vat": 228.59,
+          "cityTax": 8.79,
+          "mgmtFee": 333.47,
+          "orders": 9,
+          "cleaning": 315,
+          "internet": 28.9,
+          "improvements": 0,
+          "ownerPayment": 843.62,
+          "label": "AIRBNB"
+        },
+        "booking": {
+          "gross": 0,
+          "commission": 0,
+          "netOfCommission": 0,
+          "nights": 0,
+          "envFee": 0,
+          "afterFee": 0,
+          "vat": 0,
+          "cityTax": 0,
+          "mgmtFee": 0,
+          "orders": 0,
+          "cleaning": 0,
+          "internet": 0,
+          "improvements": 0,
+          "ownerPayment": 0,
+          "label": "Booking"
+        }
+      },
+      "statedTotal": 843.62,
+      "warnings": [
+        "AIRBNB: Internet Charge was stored as a date in the sheet and was read as 28.9."
+      ],
+      "ownerPayment": 843.62,
+      "checks": [],
+      "fx": {
+        "rate": 3.5114,
+        "date": "2026-07-31",
+        "source": "ECB"
+      }
+    },
+    {
+      "month": "2026-08",
+      "source": "PALLINEON_R_1_AUGUST_2026_1.xlsx",
+      "rates": {
+        "envFeePerNight": 8,
+        "vat": 0.13,
+        "cityTax": 0.005,
+        "mgmtFee": 0.2,
+        "cleaningPerOrder": 35,
+        "commission": {
+          "booking": 0.15
+        }
+      },
+      "platforms": {
+        "airbnb": {
+          "gross": 2357,
+          "commission": 365.34,
+          "netOfCommission": 1991.66,
+          "nights": 27,
+          "envFee": 216,
+          "afterFee": 1775.66,
+          "vat": 230.84,
+          "cityTax": 8.88,
+          "mgmtFee": 342.33,
+          "orders": 8,
+          "cleaning": 280,
+          "internet": 28.9,
+          "improvements": 49.6,
+          "ownerPayment": 835.11,
+          "label": "AIRBNB",
+          "note": "participation per apt new building lock"
+        },
+        "booking": {
+          "gross": 0,
+          "commission": 0,
+          "netOfCommission": 0,
+          "nights": 0,
+          "envFee": 0,
+          "afterFee": 0,
+          "vat": 0,
+          "cityTax": 0,
+          "mgmtFee": 0,
+          "orders": 0,
+          "cleaning": 0,
+          "internet": 0,
+          "improvements": 0,
+          "ownerPayment": 0,
+          "label": "Booking"
+        }
+      },
+      "statedTotal": 835.11,
+      "warnings": [
+        "AIRBNB: Internet Charge was stored as a date in the sheet and was read as 28.9."
+      ],
+      "ownerPayment": 835.11,
+      "checks": [],
+      "fx": {
+        "rate": 3.4647,
+        "date": "2026-08-31",
+        "source": "ECB"
+      }
+    }
+  ]
+}

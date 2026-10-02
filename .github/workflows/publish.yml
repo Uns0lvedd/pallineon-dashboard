@@ -1,0 +1,55 @@
+name: Build and publish dashboard
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Read the statements and build data.json
+        run: node scripts/build.mjs
+
+      - name: Save the built data and exchange rates to the repository
+        run: |
+          if [ -n "$(git status --porcelain data.json fx.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data.json fx.json
+            git commit -m "Update dashboard data"
+            git pull --rebase
+            git push
+          fi
+
+      - name: Collect the site files
+        run: |
+          mkdir _site
+          cp -r index.html data.json js vendor _site/
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
