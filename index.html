@@ -58,6 +58,9 @@
   .cardhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
   .chart { position: relative; height: 280px; }
   .chart.small { height: 190px; }
+  .chartfoot { display: flex; justify-content: flex-end; margin-top: 8px; font-size: 12.5px; color: var(--ink-2); }
+  .chartfoot label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+  .chartfoot input { accent-color: var(--s1); margin: 0; }
   .section { margin: 26px 2px 10px; }
   .section h2 { font-size: 18px; }
   .partners { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
@@ -256,6 +259,7 @@ var T = {
     previewTitle: 'Preview a file', previewSub: 'See a statement in the dashboard before publishing it. Nothing is saved or shared from here.',
     dropText: 'Drop the xlsx here, or click to choose a file', previewBanner: 'Preview only: {m} from "{f}" is shown here but is not published.', discard: 'Discard preview', reading: 'Reading the file…',
     footer: 'Figures come from the property manager\'s monthly statements. Occupancy counts every night of the month as available.',
+    dataLabels: 'Data labels',
     loadError: 'The dashboard data could not be loaded. If you opened this file directly from your computer, view it through GitHub Pages instead.'
   },
   he: {
@@ -295,6 +299,7 @@ var T = {
     previewTitle: 'תצוגה מקדימה של קובץ', previewSub: 'אפשר לראות דוח בדשבורד לפני הפרסום. שום דבר לא נשמר ולא משותף מכאן.',
     dropText: 'גררו לכאן את קובץ ה-xlsx, או לחצו לבחירת קובץ', previewBanner: 'תצוגה מקדימה בלבד: {m} מתוך "{f}" מוצג כאן אך לא פורסם.', discard: 'ביטול התצוגה המקדימה', reading: 'קורא את הקובץ…',
     footer: 'הנתונים מבוססים על הדוחות החודשיים של חברת הניהול. התפוסה מחושבת מתוך כל לילות החודש.',
+    dataLabels: 'תוויות נתונים',
     loadError: 'לא ניתן לטעון את נתוני הדשבורד. אם פתחתם את הקובץ ישירות מהמחשב, יש לצפות בו דרך GitHub Pages.'
   }
 };
@@ -303,6 +308,8 @@ var T = {
 var store = { get: function (k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } },
               set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 var S = { lang: store.get('lang', 'en'), cur: store.get('cur', 'EUR'), scope: 'month', month: null, platform: 'all', stack: 'abs' };
+try { S.labels = JSON.parse(store.get('labels', '{}')) || {}; } catch (e) { S.labels = {}; }
+function lab(id) { return S.labels[id] !== false; } // data labels are on unless switched off
 if (!T[S.lang]) S.lang = 'en';
 if (S.cur !== 'ILS') S.cur = 'EUR';
 var DATA = null, MONTHS = [], PUBLISHED = [], PREVIEW = null, charts = {};
@@ -456,17 +463,47 @@ function lineSet(label, data, colorVar) {
   return { label: label, data: data, borderColor: c, backgroundColor: c, borderWidth: 2, tension: 0, pointRadius: 4, pointHoverRadius: 6,
     pointBorderColor: css('--surface'), pointBorderWidth: 2, clip: false };
 }
-// Labels the last point of each line (selective direct labelling).
+// Line labels: every point when data labels are on, otherwise only the last point.
 var endLabels = { id: 'endLabels', afterDatasetsDraw: function (chart, _a, opts) {
   if (!opts || !opts.format) return;
-  var ctx = chart.ctx, used = [];
+  var ctx = chart.ctx, used = [], area = chart.chartArea;
+  ctx.save(); ctx.font = '600 11.5px ' + Chart.defaults.font.family; ctx.fillStyle = css('--ink'); ctx.direction = 'ltr'; ctx.textBaseline = 'middle';
   chart.data.datasets.forEach(function (ds, i) {
     var meta = chart.getDatasetMeta(i); if (meta.hidden || !meta.data.length || meta.type !== 'line') return;
-    var pt = meta.data[meta.data.length - 1], v = ds.data[ds.data.length - 1]; if (v == null || isNaN(v)) return;
-    var y = pt.y; used.forEach(function (u) { if (Math.abs(u - y) < 14) y = u + (y >= u ? 14 : -14); }); used.push(y);
-    ctx.save(); ctx.font = '600 12px ' + Chart.defaults.font.family; ctx.fillStyle = css('--ink'); ctx.direction = 'ltr'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText(opts.format(v), pt.x + 9, y); ctx.restore();
+    if (!opts.all) {
+      var pt = meta.data[meta.data.length - 1], v = ds.data[ds.data.length - 1]; if (v == null || isNaN(v)) return;
+      var y = pt.y; used.forEach(function (u) { if (Math.abs(u - y) < 14) y = u + (y >= u ? 14 : -14); }); used.push(y);
+      ctx.textAlign = 'left'; ctx.fillText(opts.format(v), pt.x + 9, y); return;
+    }
+    var below = opts.below && opts.below.indexOf(i) >= 0, lastLeft = Infinity;
+    for (var j = meta.data.length - 1; j >= 0; j--) { // newest first, skipping any label that would collide
+      var val = ds.data[j]; if (val == null || isNaN(val)) continue;
+      var txt = opts.format(val), w = ctx.measureText(txt).width, p = meta.data[j];
+      var x = Math.min(Math.max(p.x, area.left + w / 2), chart.width - w / 2 - 2);
+      if (x + w / 2 + 4 > lastLeft) continue; lastLeft = x - w / 2;
+      ctx.textAlign = 'center'; ctx.fillText(txt, x, below ? Math.min(p.y + 14, area.bottom - 7) : p.y - 13);
+    }
   });
+  ctx.restore();
+} };
+// Stacked bars: the column total on top, and each segment's value inside when it fits.
+function inkOn(hex) { var n = parseInt(hex.replace('#', ''), 16), l = (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255; return l > 0.58 ? '#0b0b0b' : '#ffffff'; }
+var stackLabels = { id: 'stackLabels', afterDatasetsDraw: function (chart, _a, opts) {
+  if (!opts || !opts.total) return;
+  var ctx = chart.ctx, metas = chart.data.datasets.map(function (_d, i) { return chart.getDatasetMeta(i); }).filter(function (m) { return !m.hidden; });
+  if (!metas.length) return;
+  ctx.save(); ctx.direction = 'ltr'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  var segFont = '600 10.5px ' + Chart.defaults.font.family, fits = !!opts.segment;
+  if (fits) { ctx.font = segFont; metas.forEach(function (m) { m.data.forEach(function (el, i) { // all or nothing, so columns stay comparable
+    if (Math.abs(el.base - el.y) >= 15 && ctx.measureText(opts.segment(m.index, i)).width > el.width - 4) fits = false; }); }); }
+  metas[0].data.forEach(function (_e, i) {
+    var top = Infinity, x = 0;
+    metas.forEach(function (m) { var el = m.data[i], h = Math.abs(el.base - el.y); top = Math.min(top, el.y, el.base); x = el.x;
+      if (!fits || h < 15) return;
+      ctx.font = segFont; ctx.fillStyle = inkOn(chart.data.datasets[m.index].backgroundColor); ctx.fillText(opts.segment(m.index, i), el.x, (el.y + el.base) / 2 + 1); });
+    ctx.font = '600 11.5px ' + Chart.defaults.font.family; ctx.fillStyle = css('--ink'); ctx.fillText(opts.total(i), x, top - 9);
+  });
+  ctx.restore();
 } };
 var barLabels = { id: 'barLabels', afterDatasetsDraw: function (chart, _a, opts) {
   if (!opts || !opts.labels) return;
@@ -489,14 +526,14 @@ function renderWaterfall() {
   rows.push({ f: 'ownerPayment', from: 0, to: a.ownerPayment, total: true });
   var o = baseOptions();
   o.indexAxis = 'y'; o.interaction = { mode: 'nearest', axis: 'y', intersect: false };
-  o.layout = { padding: rtl ? { left: 78 } : { right: 78 } };
+  var wl = lab('wfChart'); o.layout = { padding: wl ? (rtl ? { left: 78 } : { right: 78 }) : {} };
   o.scales.x = { reverse: rtl, grid: { color: css('--grid') }, border: { display: false }, beginAtZero: true,
     ticks: { color: css('--muted'), maxTicksLimit: 4, maxRotation: 0, callback: function (v) { return cm(v, 0); } } };
   o.scales.y = { position: rtl ? 'right' : 'left', grid: { display: false }, border: { color: css('--axis') }, ticks: { color: css('--ink-2'), font: { size: 12.5 } } };
   o.plugins.tooltip.callbacks = {
     label: function (c) { var r = rows[c.dataIndex], v = r.total ? r.to : r.v; return ' ' + (r.total ? '' : '−') + money(v) + ' · ' + t('ofGross', { v: pct(a.gross ? v / a.gross : NaN) }); }
   };
-  o.plugins.barLabels = { rtl: rtl, labels: rows.map(function (r) { return r.total ? cm(r.to, 0) : '−' + cm(r.v, 0); }) };
+  o.plugins.barLabels = { rtl: rtl, labels: !wl ? null : rows.map(function (r) { return r.total ? cm(r.to, 0) : '−' + cm(r.v, 0); }) };
   $('wfBox').style.height = (rows.length * 34 + 40) + 'px';
   draw('wfChart', { type: 'bar', plugins: [barLabels], options: o, data: {
     labels: rows.map(function (r) { return t(r.f); }),
@@ -512,9 +549,13 @@ function renderStack() {
   o.scales.x.stacked = true; o.scales.y.stacked = true;
   o.scales.y.ticks.callback = function (v) { return pc ? pct(v, 0) : cm(v, 0); };
   if (pc) o.scales.y.max = 1;
+  var sets = GROUPS.map(function (g) { return per.map(function (a) { return g.fields.reduce(function (s, f) { return s + a[f]; }, 0); }); });
+  if (lab('stackChart')) { o.layout = { padding: { top: 20 } };
+    o.plugins.stackLabels = { total: function (i) { return cm(per[i].gross, 0); },
+      segment: function (d, i) { return pc ? pct(per[i].gross ? sets[d][i] / per[i].gross : 0, 0) : num(sets[d][i], 0); } }; }
   o.plugins.tooltip.callbacks = { label: function (c) { var a = per[c.dataIndex], v = c.dataset.rawValues[c.dataIndex];
     return ' ' + c.dataset.label + ': ' + money(v) + ' (' + pct(a.gross ? v / a.gross : NaN) + ')'; } };
-  draw('stackChart', { type: 'bar', options: o, data: {
+  draw('stackChart', { type: 'bar', plugins: [stackLabels], options: o, data: {
     labels: keys.map(function (k) { return mLabel(k, 'axis'); }),
     datasets: GROUPS.map(function (g) {
       var vals = per.map(function (a) { return g.fields.reduce(function (s, f) { return s + a[f]; }, 0); });
@@ -528,21 +569,21 @@ function renderTrend() {
   var keys = MONTHS.map(function (m) { return m.month; }), per = MONTHS.map(function (m) { return agg([m]); });
   var o = baseOptions();
   o.plugins.legend.display = true; o.onClick = selectOnClick(keys);
-  o.layout = { padding: { right: 70 } };
+  var tl = lab('trendChart'); o.layout = { padding: { right: tl ? 24 : 70, top: 20 } };
   o.scales.x.offset = true;
   o.scales.y.ticks.callback = function (v) { return cm(v, 0); };
   o.plugins.tooltip.callbacks = { label: function (c) { return ' ' + c.dataset.label + ': ' + money(c.parsed.y); } };
-  o.plugins.endLabels = { format: function (v) { return cm(v, 0); } };
+  o.plugins.endLabels = { all: tl, format: function (v) { return cm(v, 0); } };
   draw('trendChart', { type: 'line', plugins: [endLabels], options: o, data: {
     labels: keys.map(function (k) { return mLabel(k, 'axis'); }),
     datasets: [lineSet(t('gross'), per.map(function (a) { return a.gross; }), '--s7'), lineSet(t('ownerPayment'), per.map(function (a) { return a.ownerPayment; }), '--s1')]
   } });
 
   function small(id, field, fmt, tick, color, max) {
-    var s = baseOptions(); s.onClick = selectOnClick(keys); s.layout = { padding: { right: 56, top: 8 } }; s.scales.x.offset = true;
+    var s = baseOptions(); s.onClick = selectOnClick(keys); var on = lab(id); s.layout = { padding: { right: on ? 24 : 56, top: 20 } }; s.scales.x.offset = true;
     s.scales.y.ticks.callback = tick; s.scales.y.ticks.maxTicksLimit = 4; if (max) s.scales.y.max = max;
     s.plugins.tooltip.callbacks = { label: function (c) { return ' ' + fmt(c.parsed.y); } };
-    s.plugins.endLabels = { format: fmt };
+    s.plugins.endLabels = { all: on, format: fmt };
     draw(id, { type: 'line', plugins: [endLabels], options: s, data: { labels: keys.map(function (k) { return mLabel(k, 'axis'); }),
       datasets: [lineSet(t(field), per.map(function (a) { return a[field]; }), color)] } });
   }
@@ -562,7 +603,8 @@ function renderPlatforms() {
   var o = baseOptions(); o.plugins.legend.display = true; o.scales.x.stacked = true; o.scales.y.stacked = true;
   o.scales.y.ticks.callback = function (v) { return cm(v, 0); };
   o.plugins.tooltip.callbacks = { label: function (c) { return ' ' + c.dataset.label + ': ' + money(c.parsed.y); } };
-  draw('platChart', { type: 'bar', options: o, data: { labels: keys.map(function (k) { return mLabel(k, 'axis'); }),
+  if (lab('platChart')) { o.layout = { padding: { top: 20 } }; o.plugins.stackLabels = { total: function (i) { return cm(agg([MONTHS[i]], 'all').gross, 0); } }; }
+  draw('platChart', { type: 'bar', plugins: [stackLabels], options: o, data: { labels: keys.map(function (k) { return mLabel(k, 'axis'); }),
     datasets: Object.keys(names).slice(0, 4).map(function (p, i) { return { label: platLabel(p), data: MONTHS.map(function (m) { return agg([m], p).gross; }),
       backgroundColor: css(slots[i]), borderColor: css('--surface'), borderWidth: { top: 2, right: 0, bottom: 0, left: 0 }, maxBarThickness: 44 }; }) } });
 }
@@ -586,10 +628,10 @@ function renderPartners() {
   var sets = [lineSet(t('total'), cum, '--s1')];
   if (equal) sets.push(lineSet(t('eachPartner') + ' (' + pct(partners[0].share, 1) + ')', cum.map(function (v) { return v * partners[0].share; }), '--s2'));
   else partners.slice(0, 5).forEach(function (p, i) { sets.push(lineSet(pName(p), cum.map(function (v) { return v * p.share; }), slots[i])); });
-  var o = baseOptions(); o.plugins.legend.display = true; o.layout = { padding: { right: 70 } }; o.scales.x.offset = true;
+  var o = baseOptions(); o.plugins.legend.display = true; var cl = lab('cumChart'); o.layout = { padding: { right: cl ? 24 : 70, top: 20 } }; o.scales.x.offset = true;
   o.scales.y.ticks.callback = function (v) { return cm(v, 0); };
   o.plugins.tooltip.callbacks = { label: function (c) { return ' ' + c.dataset.label + ': ' + money(c.parsed.y); } };
-  o.plugins.endLabels = { format: function (v) { return cm(v, 0); } };
+  o.plugins.endLabels = { all: cl, below: sets.map(function (_s, i) { return i; }).slice(1), format: function (v) { return cm(v, 0); } };
   draw('cumChart', { type: 'line', plugins: [endLabels], options: o, data: { labels: keys.map(function (k) { return mLabel(k, 'axis'); }), datasets: sets } });
 
   var head = '<thead><tr><th>' + esc(t('month')) + '</th><th>' + esc(t('total')) + '</th>' + partners.map(function (p) { return '<th>' + esc(pName(p)) + '</th>'; }).join('') + '</tr></thead>';
@@ -696,9 +738,18 @@ function renderChrome() {
   if (PREVIEW) { pb.innerHTML = '<span>' + esc(t('previewBanner', { m: mLabel(PREVIEW.month, 'long'), f: PREVIEW.source })) + '</span><button class="btn" id="discardBtn">' + esc(t('discard')) + '</button>';
     $('discardBtn').onclick = function () { PREVIEW = null; rebuildMonths(); render(); }; }
 }
+function renderLabelToggles() {
+  Array.prototype.forEach.call(document.querySelectorAll('.chart canvas'), function (cv) {
+    var box = cv.parentNode, foot = box.nextElementSibling;
+    if (!foot || !foot.classList.contains('chartfoot')) { foot = document.createElement('div'); foot.className = 'chartfoot'; box.parentNode.insertBefore(foot, box.nextSibling); }
+    foot.hidden = box.hidden;
+    foot.innerHTML = '<label><input type="checkbox"' + (lab(cv.id) ? ' checked' : '') + '> ' + esc(t('dataLabels')) + '</label>';
+    foot.querySelector('input').onchange = function () { S.labels[cv.id] = this.checked; store.set('labels', JSON.stringify(S.labels)); render(); };
+  });
+}
 function render() {
   if (!find(S.month)) S.month = MONTHS[MONTHS.length - 1].month;
-  renderChrome(); renderKpis(); renderWaterfall(); renderStack(); renderTrend(); renderPlatforms(); renderPartners(); renderStatement(); renderFaults(); renderChecks();
+  renderChrome(); renderKpis(); renderWaterfall(); renderStack(); renderTrend(); renderPlatforms(); renderPartners(); renderStatement(); renderFaults(); renderChecks(); renderLabelToggles();
 }
 function rebuildMonths() {
   MONTHS = PUBLISHED.slice();
