@@ -64,6 +64,11 @@
   .section { margin: 26px 2px 10px; }
   .section h2 { font-size: 18px; }
   .partners { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+  .partners.one { grid-template-columns: 1fr; }
+  .partner .stats { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 12px 24px; margin-top: 10px; align-items: end; }
+  .partner .stats .k { font-size: 12.5px; color: var(--ink-2); }
+  .partner .stats .v { font-size: 18px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .partner .stats .v.big { font-size: 26px; letter-spacing: -.02em; }
   .partner .name { font-weight: 650; font-size: 15px; }
   .partner .value { font-size: 24px; font-weight: 650; letter-spacing: -.02em; margin: 4px 0; }
   .partner dl { margin: 6px 0 0; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; font-size: 13px; color: var(--ink-2); }
@@ -100,6 +105,7 @@
     .kpis { grid-template-columns: repeat(2, 1fr); }
     .grid2, .grid3, .partners { grid-template-columns: 1fr; }
     .kpi .value { font-size: 22px; }
+    .partner .stats { grid-template-columns: 1fr 1fr; }
     .controls { position: static; }
     .checks > li { grid-template-columns: 22px 1fr; } .checks > li > div:last-child { grid-column: 2; }
   }
@@ -259,7 +265,7 @@ var T = {
     previewTitle: 'Preview a file', previewSub: 'See a statement in the dashboard before publishing it. Nothing is saved or shared from here.',
     dropText: 'Drop the xlsx here, or click to choose a file', previewBanner: 'Preview only: {m} from "{f}" is shown here but is not published.', discard: 'Discard preview', reading: 'Reading the file…',
     footer: 'Figures come from the property manager\'s monthly statements. Occupancy counts every night of the month as available.',
-    dataLabels: 'Data labels',
+    dataLabels: 'Data labels', splitBetween: 'Split equally between {names}',
     loadError: 'The dashboard data could not be loaded. If you opened this file directly from your computer, view it through GitHub Pages instead.'
   },
   he: {
@@ -299,7 +305,7 @@ var T = {
     previewTitle: 'תצוגה מקדימה של קובץ', previewSub: 'אפשר לראות דוח בדשבורד לפני הפרסום. שום דבר לא נשמר ולא משותף מכאן.',
     dropText: 'גררו לכאן את קובץ ה-xlsx, או לחצו לבחירת קובץ', previewBanner: 'תצוגה מקדימה בלבד: {m} מתוך "{f}" מוצג כאן אך לא פורסם.', discard: 'ביטול התצוגה המקדימה', reading: 'קורא את הקובץ…',
     footer: 'הנתונים מבוססים על הדוחות החודשיים של חברת הניהול. התפוסה מחושבת מתוך כל לילות החודש.',
-    dataLabels: 'תוויות נתונים',
+    dataLabels: 'תוויות נתונים', splitBetween: 'מתחלק שווה בשווה בין {names}',
     loadError: 'לא ניתן לטעון את נתוני הדשבורד. אם פתחתם את הקובץ ישירות מהמחשב, יש לצפות בו דרך GitHub Pages.'
   }
 };
@@ -481,7 +487,7 @@ var endLabels = { id: 'endLabels', afterDatasetsDraw: function (chart, _a, opts)
       var txt = opts.format(val), w = ctx.measureText(txt).width, p = meta.data[j];
       var x = Math.min(Math.max(p.x, area.left + w / 2), chart.width - w / 2 - 2);
       if (x + w / 2 + 4 > lastLeft) continue; lastLeft = x - w / 2;
-      ctx.textAlign = 'center'; ctx.fillText(txt, x, below ? Math.min(p.y + 14, area.bottom - 7) : p.y - 13);
+      ctx.textAlign = 'center'; ctx.fillText(txt, x, below && p.y + 21 <= area.bottom ? p.y + 14 : p.y - 13);
     }
   });
   ctx.restore();
@@ -615,6 +621,15 @@ function renderPartners() {
   var partners = DATA.config.partners, cur = agg(scopeMonths()), all = agg(MONTHS);
   var year = S.month.slice(0, 4), ytd = agg(MONTHS.filter(function (m) { return m.month.slice(0, 4) === year && m.month <= S.month; }));
   $('partnersSub').textContent = t('partnersSub', { p: periodLabel() });
+  var equal = partners.every(function (p) { return Math.abs(p.share - partners[0].share) < 1e-9; });
+  $('partners').className = 'partners' + (equal ? ' one' : '');
+  if (equal) { // identical shares: one card instead of repeating the same numbers per partner
+    var sh = partners[0].share, stat = function (k, v, big) { return '<div><div class="k">' + esc(k) + '</div><div class="v' + (big ? ' big' : '') + '"><bdi>' + v + '</bdi></div></div>'; };
+    $('partners').innerHTML = '<div class="card partner"><div class="name">' + esc(t('eachPartner')) + ' <span class="muted" style="font-weight:400">· ' + pct(sh, 2) + '</span></div>' +
+      '<div class="sub">' + esc(t('splitBetween', { names: partners.map(pName).join(', ') })) + '</div><div class="stats">' +
+      stat(periodLabel(), money(cur.ownerPayment * sh), true) + stat(t('yearToDate', { y: year }), money(ytd.ownerPayment * sh)) +
+      stat(t('allTime'), money(all.ownerPayment * sh)) + stat(t('avgMonth'), money(all.n ? all.ownerPayment * sh / all.n : NaN)) + '</div></div>';
+  } else
   $('partners').innerHTML = partners.map(function (p) {
     return '<div class="card partner"><div class="name">' + esc(pName(p)) + ' <span class="muted" style="font-weight:400">· ' + pct(p.share, 2) + '</span></div>' +
       '<div class="value"><bdi>' + money(cur.ownerPayment * p.share) + '</bdi></div><div class="sub">' + esc(periodLabel()) + '</div><dl>' +
@@ -623,8 +638,9 @@ function renderPartners() {
       '<dt>' + esc(t('avgMonth')) + '</dt><dd><bdi>' + money(all.n ? all.ownerPayment * p.share / all.n : NaN) + '</bdi></dd></dl></div>';
   }).join('');
 
+
   var keys = MONTHS.map(function (m) { return m.month; }), run = 0, cum = MONTHS.map(function (m) { run += agg([m]).ownerPayment; return run; });
-  var equal = partners.every(function (p) { return Math.abs(p.share - partners[0].share) < 1e-9; }), slots = ['--s2', '--s3', '--s4', '--s5', '--s6'];
+  var slots = ['--s2', '--s3', '--s4', '--s5', '--s6'];
   var sets = [lineSet(t('total'), cum, '--s1')];
   if (equal) sets.push(lineSet(t('eachPartner') + ' (' + pct(partners[0].share, 1) + ')', cum.map(function (v) { return v * partners[0].share; }), '--s2'));
   else partners.slice(0, 5).forEach(function (p, i) { sets.push(lineSet(pName(p), cum.map(function (v) { return v * p.share; }), slots[i])); });
@@ -634,11 +650,12 @@ function renderPartners() {
   o.plugins.endLabels = { all: cl, below: sets.map(function (_s, i) { return i; }).slice(1), format: function (v) { return cm(v, 0); } };
   draw('cumChart', { type: 'line', plugins: [endLabels], options: o, data: { labels: keys.map(function (k) { return mLabel(k, 'axis'); }), datasets: sets } });
 
-  var head = '<thead><tr><th>' + esc(t('month')) + '</th><th>' + esc(t('total')) + '</th>' + partners.map(function (p) { return '<th>' + esc(pName(p)) + '</th>'; }).join('') + '</tr></thead>';
+  var cols = equal ? [{ name: { en: T.en.eachPartner, he: T.he.eachPartner }, share: partners[0].share }] : partners;
+  var head = '<thead><tr><th>' + esc(t('month')) + '</th><th>' + esc(t('total')) + '</th>' + cols.map(function (p) { return '<th>' + esc(pName(p)) + '</th>'; }).join('') + '</tr></thead>';
   var body = MONTHS.slice().reverse().map(function (m) { var a = agg([m]);
     return '<tr data-month="' + m.month + '" class="' + (inScope(m) ? 'sel' : '') + '"><td>' + esc(mLabel(m.month)) + '</td><td><bdi>' + money(a.ownerPayment) + '</bdi></td>' +
-      partners.map(function (p) { return '<td><bdi>' + money(a.ownerPayment * p.share) + '</bdi></td>'; }).join('') + '</tr>'; }).join('');
-  var foot = '<tfoot><tr><td>' + esc(t('total')) + '</td><td><bdi>' + money(all.ownerPayment) + '</bdi></td>' + partners.map(function (p) { return '<td><bdi>' + money(all.ownerPayment * p.share) + '</bdi></td>'; }).join('') + '</tr></tfoot>';
+      cols.map(function (p) { return '<td><bdi>' + money(a.ownerPayment * p.share) + '</bdi></td>'; }).join('') + '</tr>'; }).join('');
+  var foot = '<tfoot><tr><td>' + esc(t('total')) + '</td><td><bdi>' + money(all.ownerPayment) + '</bdi></td>' + cols.map(function (p) { return '<td><bdi>' + money(all.ownerPayment * p.share) + '</bdi></td>'; }).join('') + '</tr></tfoot>';
   $('partnerTable').innerHTML = head + '<tbody>' + body + '</tbody>' + foot;
 }
 function inScope(m) { return scopeMonths().indexOf(m) >= 0; }
