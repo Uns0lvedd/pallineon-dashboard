@@ -1,10 +1,32 @@
 {
-  "propertyName": { "en": "Pallineon · Room 1", "he": "Pallineon · חדר 1" },
+  "propertyName": {
+    "en": "Pallineon · Room 1",
+    "he": "Pallineon · חדר 1",
+    "el": "Pallineon · Δωμάτιο 1"
+  },
   "units": 1,
   "repoUrl": "",
   "partners": [
-    { "name": { "en": "Yuval", "he": "יובל" }, "weight": 1 },
-    { "name": { "en": "Guy", "he": "גיא" }, "weight": 1 },
-    { "name": { "en": "Dganit", "he": "דגנית" }, "weight": 1 }
+    {
+      "name": {
+        "en": "Yuval",
+        "he": "יובל"
+      },
+      "weight": 1
+    },
+    {
+      "name": {
+        "en": "Guy",
+        "he": "גיא"
+      },
+      "weight": 1
+    },
+    {
+      "name": {
+        "en": "Dganit",
+        "he": "דגנית"
+      },
+      "weight": 1
+    }
   ]
 }

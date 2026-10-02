@@ -34,7 +34,7 @@
   .sub { color: var(--ink-2); font-size: 13px; margin: 0; }
   .muted { color: var(--muted); }
   header.top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; }
-  .toggles { display: flex; gap: 8px; }
+  .toggles { display: flex; gap: 8px; flex-wrap: wrap; }
   .controls { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 12px; background: var(--surface);
     border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; position: sticky; top: 8px; z-index: 5; }
   .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; padding: 2px; background: var(--page); }
@@ -120,7 +120,7 @@
     </div>
     <div class="toggles">
       <div class="seg" id="langSeg" role="group" aria-label="Language">
-        <button data-v="en">English</button><button data-v="he">עברית</button>
+        <button data-v="en">English</button><button data-v="he">עברית</button><button data-v="el">Ελληνικά</button>
       </div>
       <div class="seg" id="curSeg" role="group" aria-label="Currency">
         <button data-v="EUR">€ EUR</button><button data-v="ILS">₪ ILS</button>
@@ -310,6 +310,47 @@ var T = {
   }
 };
 
+T.el = {
+  subtitle: 'Μηνιαίες εκκαθαρίσεις ιδιοκτήτη', scopeMonth: 'Μήνας', scopeYtd: 'Από αρχή έτους', scopeAll: 'Όλη η περίοδος',
+  allPlatforms: 'Όλες οι πλατφόρμες', updated: 'Ενημέρωση δεδομένων',
+  fxMonth: '1 € = ₪{rate} · ισοτιμία αναφοράς {src}, {date}', fxMulti: 'Τα ποσά σε σέκελ μετατρέπονται για κάθε μήνα με την ισοτιμία τέλους του μήνα (εμφανίζεται στη μηνιαία εκκαθάριση).',
+  fxProvisional: 'προσωρινή ισοτιμία', fxNote: 'Τα ποσά σε σέκελ είναι κατά προσέγγιση: η πραγματική μετατροπή γίνεται όταν μεταφέρονται τα χρήματα.',
+  ownerPayment: 'Πληρωμή ιδιοκτήτη', gross: 'Ακαθάριστο εισόδημα', ownerShare: 'Μερίδιο ιδιοκτήτη επί του ακαθάριστου', occupancy: 'Πληρότητα',
+  adr: 'Μέση τιμή ανά νύχτα', revpar: 'Έσοδα ανά διαθέσιμη νύχτα', orders: 'Κρατήσεις', avgStay: 'Μέση διαμονή',
+  nights: 'νύχτες', nightsOf: '{n} από {d} νύχτες', nightsBooked: '{n} κρατημένες νύχτες', perOrder: '{v} ακαθάριστα ανά κράτηση',
+  vsPrev: 'σε σχέση με {m}', vsYear: 'σε σχέση με {m}', pts: 'μον.', noCompare: 'Δεν υπάρχει προηγούμενη περίοδος για σύγκριση',
+  commission: 'Προμήθεια πλατφόρμας', envFee: 'Περιβαλλοντικό τέλος', vat: 'ΦΠΑ', cityTax: 'Δημοτικός φόρος', mgmtFee: 'Αμοιβή διαχείρισης',
+  cleaning: 'Καθαρισμός', internet: 'Ίντερνετ', improvements: 'Βελτιώσεις / βλάβες',
+  gTaxes: 'Φόροι και περιβαλλοντικό τέλος', gOther: 'Ίντερνετ και επισκευές',
+  wfTitle: 'Από το ακαθάριστο εισόδημα στην πληρωμή ιδιοκτήτη', wfSub: '{p} · όλες οι χρεώσεις της εκκαθάρισης', ofGross: '{v} του ακαθάριστου',
+  stackTitle: 'Πού πηγαίνει το ακαθάριστο εισόδημα', stackSub: 'Κάθε μήνας χωρισμένος σε κόστη και σε ό,τι μένει στους ιδιοκτήτες', amounts: 'Ποσό', percent: '% του ακαθάριστου',
+  trendTitle: 'Ακαθάριστο εισόδημα και πληρωμή ιδιοκτήτη', trendSub: 'Ανά μήνα. Κάντε κλικ σε έναν μήνα για να τον επιλέξετε.',
+  occTitle: 'Πληρότητα', occSub: 'Κρατημένες νύχτες ως ποσοστό του μήνα', adrTitle: 'Μέση τιμή ανά νύχτα', adrSub: 'Ακαθάριστο εισόδημα ανά κρατημένη νύχτα',
+  shareTitle: 'Μερίδιο ιδιοκτήτη επί του ακαθάριστου', shareSub: 'Η πληρωμή ιδιοκτήτη ως ποσοστό του ακαθάριστου εισοδήματος',
+  platTitle: 'Εισόδημα ανά πλατφόρμα', platOnly: 'Όλο το εισόδημα μέχρι τώρα προήλθε από {p}. Η σύγκριση θα εμφανιστεί εδώ όταν υπάρξουν κρατήσεις και από άλλη πλατφόρμα.', platSub: 'Ακαθάριστο εισόδημα ανά μήνα',
+  partnersTitle: 'Κατανομή μεταξύ των συνεταίρων', partnersSub: 'Η πληρωμή ιδιοκτήτη μοιρασμένη στους συνεταίρους · {p}',
+  share: 'Μερίδιο', thisPeriod: 'Επιλεγμένη περίοδος', yearToDate: 'Από αρχή του {y}', allTime: 'Όλη η περίοδος', avgMonth: 'Μηνιαίος μέσος όρος',
+  cumTitle: 'Σωρευτική πληρωμή ιδιοκτήτη', cumSub: 'Τρέχον σύνολο από την πρώτη εκκαθάριση', total: 'Σύνολο', eachPartner: 'Κάθε συνεταίρος',
+  partnerTableTitle: 'Κατανομή ανά μήνα', partnerTableSub: 'Όλοι οι καταγεγραμμένοι μήνες',
+  statementTitle: 'Μηνιαία εκκαθάριση', statementSub: 'Όλες οι γραμμές κάθε εκκαθάρισης. Κάντε κλικ σε μια γραμμή για να επιλέξετε τον μήνα.', exportCsv: 'Εξαγωγή CSV',
+  month: 'Μήνας', rate: '₪ ανά €', nightsCol: 'Νύχτες', nightlyRate: 'Τιμή ανά νύχτα',
+  faultsTitle: 'Βελτιώσεις και βλάβες', faultsSub: 'Χρεώσεις επισκευών και αναβαθμίσεων με τις σημειώσεις του διαχειριστή', amount: 'Ποσό', note: 'Σημείωση', noFaults: 'Δεν υπάρχουν μέχρι τώρα χρεώσεις για βελτιώσεις ή βλάβες.',
+  checkTitle: 'Έλεγχος εκκαθάρισης', checkSub: 'Κάθε εκκαθάριση υπολογίζεται ξανά με τους συντελεστές του διαχειριστή: {r}',
+  ratesLine: 'περιβαλλοντικό τέλος {e} ανά νύχτα, ΦΠΑ {v}, δημοτικός φόρος {c}, διαχείριση {m}, καθαρισμός {k} ανά κράτηση',
+  checkOk: 'Όλες οι γραμμές συμφωνούν με τους συντελεστές.', checkLine: '{f}: η εκκαθάριση αναφέρει {s}, οι συντελεστές δίνουν {e}.',
+  checkCommission: 'Η προμήθεια {p} ήταν {a} του ακαθάριστου, ενώ τους άλλους μήνες είναι {b} (περίπου {d} περισσότερο).', checkCommissionLess: 'Η προμήθεια {p} ήταν {a} του ακαθάριστου, ενώ τους άλλους μήνες είναι {b} (περίπου {d} λιγότερο).',
+  checkTotal: 'Σύνολο όλων των πλατφορμών', manualEntry: 'Καταχωρίστηκε χειροκίνητα, όχι από αρχείο xlsx.', readNote: 'Σημείωση ανάγνωσης: {w}',
+  uploadTitle: 'Προσθήκη νέου μήνα', uploadSub: 'Η δημοσίευση γίνεται στο GitHub. Η προεπισκόπηση εδώ χρησιμεύει μόνο για τον έλεγχο του αρχείου πριν από αυτήν.',
+  publishTitle: 'Δημοσίευση εκκαθάρισης',
+  steps: ['Ανοίξτε τον φάκελο <code>reports</code> του αποθετηρίου στο GitHub.', 'Επιλέξτε "Add file", μετά "Upload files", και σύρετε το xlsx του μήνα.', 'Πατήστε "Commit changes". Ο πίνακας ενημερώνεται σε περίπου ένα λεπτό.', 'Αν το αρχείο έχει πρόβλημα, το GitHub στέλνει την αιτία με email και ο πίνακας μένει όπως ήταν.'],
+  openUpload: 'Άνοιγμα της σελίδας μεταφόρτωσης στο GitHub',
+  previewTitle: 'Προεπισκόπηση αρχείου', previewSub: 'Δείτε μια εκκαθάριση στον πίνακα πριν τη δημοσιεύσετε. Τίποτα δεν αποθηκεύεται ούτε κοινοποιείται από εδώ.',
+  dropText: 'Σύρετε το xlsx εδώ ή κάντε κλικ για να επιλέξετε αρχείο', previewBanner: 'Μόνο προεπισκόπηση: ο μήνας {m} από το "{f}" εμφανίζεται εδώ αλλά δεν έχει δημοσιευτεί.', discard: 'Απόρριψη προεπισκόπησης', reading: 'Ανάγνωση αρχείου…',
+  footer: 'Τα στοιχεία προέρχονται από τις μηνιαίες εκκαθαρίσεις του διαχειριστή του ακινήτου. Η πληρότητα θεωρεί διαθέσιμες όλες τις νύχτες του μήνα.',
+  dataLabels: 'Ετικέτες δεδομένων', splitBetween: 'Μοιράζεται ισόποσα μεταξύ {names}',
+  loadError: 'Δεν ήταν δυνατή η φόρτωση των δεδομένων του πίνακα. Αν ανοίξατε το αρχείο απευθείας από τον υπολογιστή σας, δείτε το μέσω του GitHub Pages.'
+};
+
 /* ----------------------------------------------------------------- state */
 var store = { get: function (k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } },
               set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
@@ -339,7 +380,7 @@ function t(k, vars) {
 function $(id) { return document.getElementById(id); }
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
-function locale() { return S.lang === 'he' ? 'he-IL' : 'en-GB'; }
+function locale() { return S.lang === 'he' ? 'he-IL' : S.lang === 'el' ? 'el-GR' : 'en-GB'; }
 
 /* ------------------------------------------------------------ formatting */
 function money(v, digits) {
@@ -650,7 +691,7 @@ function renderPartners() {
   o.plugins.endLabels = { all: cl, below: sets.map(function (_s, i) { return i; }).slice(1), format: function (v) { return cm(v, 0); } };
   draw('cumChart', { type: 'line', plugins: [endLabels], options: o, data: { labels: keys.map(function (k) { return mLabel(k, 'axis'); }), datasets: sets } });
 
-  var cols = equal ? [{ name: { en: T.en.eachPartner, he: T.he.eachPartner }, share: partners[0].share }] : partners;
+  var cols = equal ? [{ name: { en: t('eachPartner') }, share: partners[0].share }] : partners;
   var head = '<thead><tr><th>' + esc(t('month')) + '</th><th>' + esc(t('total')) + '</th>' + cols.map(function (p) { return '<th>' + esc(pName(p)) + '</th>'; }).join('') + '</tr></thead>';
   var body = MONTHS.slice().reverse().map(function (m) { var a = agg([m]);
     return '<tr data-month="' + m.month + '" class="' + (inScope(m) ? 'sel' : '') + '"><td>' + esc(mLabel(m.month)) + '</td><td><bdi>' + money(a.ownerPayment) + '</bdi></td>' +

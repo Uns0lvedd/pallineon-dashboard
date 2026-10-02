@@ -1,9 +1,10 @@
 {
-  "generatedAt": "2026-10-02T21:59:16.554Z",
+  "generatedAt": "2026-10-02T22:33:03.380Z",
   "config": {
     "propertyName": {
       "en": "Pallineon · Room 1",
-      "he": "Pallineon · חדר 1"
+      "he": "Pallineon · חדר 1",
+      "el": "Pallineon · Δωμάτιο 1"
     },
     "units": 1,
     "repoUrl": "",
