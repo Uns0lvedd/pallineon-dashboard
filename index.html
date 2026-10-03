@@ -61,6 +61,15 @@
   .chartfoot { display: flex; justify-content: flex-end; margin-top: 8px; font-size: 12.5px; color: var(--ink-2); }
   .chartfoot label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
   .chartfoot input { accent-color: var(--s1); margin: 0; }
+  .pie { display: grid; grid-template-columns: minmax(0, 230px) minmax(0, 1fr); gap: 8px 20px; align-items: center; }
+  .pie .chart { height: 230px; grid-column: 1; grid-row: 1; }
+  .pie .chartfoot { grid-column: 1 / -1; grid-row: 2; }
+  .pielegend { grid-column: 2; grid-row: 1; list-style: none; margin: 0; padding: 0; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .pielegend li { display: grid; grid-template-columns: 12px 1fr auto 52px; gap: 8px; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--grid); color: var(--ink-2); }
+  .pielegend li:last-child { border-bottom: 0; }
+  .pielegend li.main, .pielegend li.sum { color: var(--ink); font-weight: 650; }
+  .pielegend i { width: 10px; height: 10px; border-radius: 3px; display: block; }
+  .pielegend .v { color: var(--ink); } .pielegend .p { text-align: end; color: var(--muted); font-weight: 400; }
   .section { margin: 26px 2px 10px; }
   .section h2 { font-size: 18px; }
   .partners { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
@@ -106,6 +115,7 @@
     .grid2, .grid3, .partners { grid-template-columns: 1fr; }
     .kpi .value { font-size: 22px; }
     .partner .stats { grid-template-columns: 1fr 1fr; }
+    .pie { grid-template-columns: 1fr; } .pielegend { grid-column: 1; grid-row: 2; } .pie .chartfoot { grid-row: 3; }
     .controls { position: static; }
     .checks > li { grid-template-columns: 22px 1fr; } .checks > li > div:last-child { grid-column: 2; }
   }
@@ -142,7 +152,7 @@
   <div class="grid2">
     <div class="card">
       <div class="cardhead"><div><h2 data-t="wfTitle"></h2><p class="sub" id="wfSub"></p></div></div>
-      <div class="chart" id="wfBox"><canvas id="wfChart"></canvas></div>
+      <div class="pie"><div class="chart" id="wfBox"><canvas id="wfChart"></canvas></div><ul class="pielegend" id="wfLegend"></ul></div>
     </div>
     <div class="card">
       <div class="cardhead"><div><h2 data-t="stackTitle"></h2><p class="sub" data-t="stackSub"></p></div>
@@ -240,7 +250,7 @@ var T = {
     commission: 'Platform commission', envFee: 'Environmental fee', vat: 'VAT', cityTax: 'City tax', mgmtFee: 'Management fee',
     cleaning: 'Cleaning', internet: 'Internet', improvements: 'Improvements / faults',
     gTaxes: 'Taxes and environmental fee', gOther: 'Internet and repairs',
-    wfTitle: 'From gross income to owner payment', wfSub: '{p} · every deduction on the statement', ofGross: '{v} of gross',
+    wfTitle: 'From gross income to owner payment', wfSub: '{p} · how the gross income divides', ofGross: '{v} of gross',
     stackTitle: 'Where the gross income goes', stackSub: 'Each month split into costs and what the owners keep', amounts: 'Amount', percent: '% of gross',
     trendTitle: 'Gross income and owner payment', trendSub: 'By month. Click a month to select it.',
     occTitle: 'Occupancy', occSub: 'Booked nights as a share of the month', adrTitle: 'Average nightly rate', adrSub: 'Gross income per booked night',
@@ -280,7 +290,7 @@ var T = {
     commission: 'עמלת פלטפורמה', envFee: 'אגרת סביבה', vat: 'מע״מ', cityTax: 'מס עירוני', mgmtFee: 'דמי ניהול',
     cleaning: 'ניקיון', internet: 'אינטרנט', improvements: 'שיפורים / תקלות',
     gTaxes: 'מיסים ואגרת סביבה', gOther: 'אינטרנט ותיקונים',
-    wfTitle: 'מהכנסה ברוטו לתשלום לבעלים', wfSub: '{p} · כל הניכויים שבדוח', ofGross: '{v} מהברוטו',
+    wfTitle: 'מהכנסה ברוטו לתשלום לבעלים', wfSub: '{p} · איך מתחלקת ההכנסה ברוטו', ofGross: '{v} מהברוטו',
     stackTitle: 'לאן הולכת ההכנסה ברוטו', stackSub: 'כל חודש מחולק לעלויות ולמה שנשאר לבעלים', amounts: 'סכום', percent: '% מהברוטו',
     trendTitle: 'הכנסה ברוטו ותשלום לבעלים', trendSub: 'לפי חודש. לחיצה על חודש בוחרת אותו.',
     occTitle: 'תפוסה', occSub: 'לילות מוזמנים מתוך ימי החודש', adrTitle: 'מחיר ממוצע ללילה', adrSub: 'הכנסה ברוטו ללילה מוזמן',
@@ -322,7 +332,7 @@ T.el = {
   commission: 'Προμήθεια πλατφόρμας', envFee: 'Περιβαλλοντικό τέλος', vat: 'ΦΠΑ', cityTax: 'Δημοτικός φόρος', mgmtFee: 'Αμοιβή διαχείρισης',
   cleaning: 'Καθαρισμός', internet: 'Ίντερνετ', improvements: 'Βελτιώσεις / βλάβες',
   gTaxes: 'Φόροι και περιβαλλοντικό τέλος', gOther: 'Ίντερνετ και επισκευές',
-  wfTitle: 'Από το ακαθάριστο εισόδημα στην πληρωμή ιδιοκτήτη', wfSub: '{p} · όλες οι χρεώσεις της εκκαθάρισης', ofGross: '{v} του ακαθάριστου',
+  wfTitle: 'Από το ακαθάριστο εισόδημα στην πληρωμή ιδιοκτήτη', wfSub: '{p} · πώς μοιράζεται το ακαθάριστο εισόδημα', ofGross: '{v} του ακαθάριστου',
   stackTitle: 'Πού πηγαίνει το ακαθάριστο εισόδημα', stackSub: 'Κάθε μήνας χωρισμένος σε κόστη και σε ό,τι μένει στους ιδιοκτήτες', amounts: 'Ποσό', percent: '% του ακαθάριστου',
   trendTitle: 'Ακαθάριστο εισόδημα και πληρωμή ιδιοκτήτη', trendSub: 'Ανά μήνα. Κάντε κλικ σε έναν μήνα για να τον επιλέξετε.',
   occTitle: 'Πληρότητα', occSub: 'Κρατημένες νύχτες ως ποσοστό του μήνα', adrTitle: 'Μέση τιμή ανά νύχτα', adrSub: 'Ακαθάριστο εισόδημα ανά κρατημένη νύχτα',
@@ -552,41 +562,41 @@ var stackLabels = { id: 'stackLabels', afterDatasetsDraw: function (chart, _a, o
   });
   ctx.restore();
 } };
-var barLabels = { id: 'barLabels', afterDatasetsDraw: function (chart, _a, opts) {
-  if (!opts || !opts.labels) return;
-  var ctx = chart.ctx, meta = chart.getDatasetMeta(0), rtl = !!opts.rtl;
-  meta.data.forEach(function (bar, i) {
-    var a = Math.min(bar.x, bar.base), b = Math.max(bar.x, bar.base);
-    ctx.save(); ctx.font = '600 12px ' + Chart.defaults.font.family; ctx.fillStyle = css('--ink'); ctx.textBaseline = 'middle'; ctx.direction = 'ltr';
-    ctx.textAlign = rtl ? 'right' : 'left';
-    ctx.fillText(opts.labels[i], rtl ? a - 6 : b + 6, bar.y); ctx.restore();
-  });
-} };
 function draw(id, config) { if (charts[id]) charts[id].destroy(); charts[id] = new Chart($(id), config); }
 function selectOnClick(keys) { return function (_e, els) { if (els && els.length) { S.month = keys[els[0].index]; if (S.scope === 'all') S.scope = 'month'; render(); } }; }
 
+// Part-to-whole: gross income split into the owner payment and each cost group.
+var pieLabels = { id: 'pieLabels', afterDatasetsDraw: function (chart, _a, opts) {
+  if (!opts) return;
+  var ctx = chart.ctx, meta = chart.getDatasetMeta(0), area = chart.chartArea, cx = (area.left + area.right) / 2, cy = (area.top + area.bottom) / 2;
+  ctx.save(); ctx.direction = 'ltr'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '12px ' + Chart.defaults.font.family; ctx.fillStyle = css('--ink-2'); ctx.fillText(opts.centerLabel, cx, cy - 11);
+  ctx.font = '650 17px ' + Chart.defaults.font.family; ctx.fillStyle = css('--ink'); ctx.fillText(opts.centerValue, cx, cy + 9);
+  if (opts.slices) meta.data.forEach(function (arc, i) {
+    if (arc.endAngle - arc.startAngle < 0.3) return; // too thin to hold a label
+    var mid = (arc.startAngle + arc.endAngle) / 2, r = (arc.innerRadius + arc.outerRadius) / 2;
+    ctx.font = '600 11.5px ' + Chart.defaults.font.family; ctx.fillStyle = inkOn(chart.data.datasets[0].backgroundColor[i]);
+    ctx.fillText(opts.slices[i], arc.x + Math.cos(mid) * r, arc.y + Math.sin(mid) * r);
+  });
+  ctx.restore();
+} };
 function renderWaterfall() {
-  var a = agg(scopeMonths()), rtl = S.lang === 'he';
+  var a = agg(scopeMonths()), share = function (v) { return a.gross ? v / a.gross : NaN; };
   $('wfSub').textContent = t('wfSub', { p: periodLabel() });
-  var rows = [{ f: 'gross', from: 0, to: a.gross, total: true }], run = a.gross;
-  COSTS.forEach(function (f) { if (Math.abs(a[f]) > 0.004) { rows.push({ f: f, from: run - a[f], to: run, v: a[f] }); run -= a[f]; } });
-  rows.push({ f: 'ownerPayment', from: 0, to: a.ownerPayment, total: true });
-  var o = baseOptions();
-  o.indexAxis = 'y'; o.interaction = { mode: 'nearest', axis: 'y', intersect: false };
-  var wl = lab('wfChart'); o.layout = { padding: wl ? (rtl ? { left: 78 } : { right: 78 }) : {} };
-  o.scales.x = { reverse: rtl, grid: { color: css('--grid') }, border: { display: false }, beginAtZero: true,
-    ticks: { color: css('--muted'), maxTicksLimit: 4, maxRotation: 0, callback: function (v) { return cm(v, 0); } } };
-  o.scales.y = { position: rtl ? 'right' : 'left', grid: { display: false }, border: { color: css('--axis') }, ticks: { color: css('--ink-2'), font: { size: 12.5 } } };
-  o.plugins.tooltip.callbacks = {
-    label: function (c) { var r = rows[c.dataIndex], v = r.total ? r.to : r.v; return ' ' + (r.total ? '' : '−') + money(v) + ' · ' + t('ofGross', { v: pct(a.gross ? v / a.gross : NaN) }); }
-  };
-  o.plugins.barLabels = { rtl: rtl, labels: !wl ? null : rows.map(function (r) { return r.total ? cm(r.to, 0) : '−' + cm(r.v, 0); }) };
-  $('wfBox').style.height = (rows.length * 34 + 40) + 'px';
-  draw('wfChart', { type: 'bar', plugins: [barLabels], options: o, data: {
-    labels: rows.map(function (r) { return t(r.f); }),
-    datasets: [{ data: rows.map(function (r) { return [r.from, r.to]; }), backgroundColor: rows.map(function (r) { return css(FIELD_COLOR[r.f]); }),
-      borderRadius: 4, borderSkipped: false, barThickness: 18 }]
+  var groups = GROUPS.map(function (g) { return { g: g, v: g.fields.reduce(function (s, f) { return s + a[f]; }, 0) }; });
+  var o = baseOptions(); delete o.scales;
+  o.interaction = { mode: 'nearest', intersect: true }; o.cutout = '58%';
+  o.plugins.tooltip.callbacks = { label: function (c) { return ' ' + money(groups[c.dataIndex].v) + ' · ' + t('ofGross', { v: pct(share(groups[c.dataIndex].v)) }); } };
+  o.plugins.pieLabels = { centerLabel: t('gross'), centerValue: cm(a.gross, 0), slices: lab('wfChart') ? groups.map(function (x) { return pct(share(x.v), 0); }) : null };
+  draw('wfChart', { type: 'doughnut', plugins: [pieLabels], options: o, data: {
+    labels: groups.map(function (x) { return t(x.g.key); }),
+    datasets: [{ data: groups.map(function (x) { return Math.max(x.v, 0); }), backgroundColor: groups.map(function (x) { return css(x.g.color); }),
+      borderColor: css('--surface'), borderWidth: 2, hoverOffset: 4 }]
   } });
+  // Every line of the statement, coloured by the slice it belongs to.
+  var row = function (f, cls) { return '<li class="' + (cls || '') + '"><i style="background:' + (f === 'gross' ? 'transparent' : css(FIELD_COLOR[f])) + '"></i><span>' + esc(t(f)) +
+    '</span><bdi class="v">' + money(a[f]) + '</bdi><bdi class="p">' + pct(share(a[f])) + '</bdi></li>'; };
+  $('wfLegend').innerHTML = row('ownerPayment', 'main') + COSTS.filter(function (f) { return Math.abs(a[f]) > 0.004; }).map(function (f) { return row(f); }).join('') + row('gross', 'sum');
 }
 
 function renderStack() {
