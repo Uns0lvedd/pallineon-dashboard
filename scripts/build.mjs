@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /*
- * Builds data.json from every statement in /reports (xlsx) and /manual (json).
+ * Builds data.json from every statement in /reports (xlsx) and /manual (json),
+ * plus the separately paid utility bills in /bills (json, optional).
  * Run by the GitHub Action on every push. Run locally with:  node scripts/build.mjs
  *
  * Exits with an error (and publishes nothing) when a file cannot be read,
@@ -63,6 +64,32 @@ for (const name of list(path.join(ROOT, 'manual'))) {
   }
 }
 
+// ---- utility bills from /bills (paid outside the manager's statement) ---------
+// One JSON file per bill. Optional: a missing folder simply means no bills.
+const BILL_TYPES = ['electricity', 'water', 'other'];
+const isDate = (v) => /^20\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(v || '');
+const bills = [];
+for (const name of list(path.join(ROOT, 'bills'))) {
+  if (!/\.json$/i.test(name)) continue;
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(ROOT, 'bills', name), 'utf8'));
+    if (!/^20\d{2}-(0[1-9]|1[0-2])$/.test(raw.month || '')) throw new Error('"month" must look like "2026-10" (the month the bill was issued).');
+    if (!BILL_TYPES.includes(raw.type)) throw new Error(`"type" must be one of ${BILL_TYPES.join(', ')}.`);
+    if (typeof raw.amount !== 'number' || !(raw.amount > 0)) throw new Error('"amount" must be a positive number in euros, for example 136.75.');
+    for (const f of ['issueDate', 'dueDate', 'paidDate']) if (raw[f] != null && raw[f] !== '' && !isDate(raw[f])) throw new Error(`"${f}" must look like "2026-11-03".`);
+    if (raw.issueDate && raw.issueDate.slice(0, 7) !== raw.month) warnings.push(`bills/${name}: issued ${raw.issueDate} but counted in ${raw.month}.`);
+    bills.push({
+      file: `bills/${name}`, month: raw.month, type: raw.type, amount: Math.round(raw.amount * 100) / 100,
+      issueDate: raw.issueDate || null, period: raw.period || null, dueDate: raw.dueDate || null,
+      paid: raw.paid === true, paidBy: raw.paidBy || null, paidDate: raw.paidDate || null,
+      reference: raw.reference || null, note: raw.note || null,
+    });
+  } catch (e) {
+    errors.push(`bills/${name}: ${e.message}`);
+  }
+}
+bills.sort((a, b) => (a.month + (a.issueDate || '') + a.file).localeCompare(b.month + (b.issueDate || '') + b.file));
+
 if (errors.length) fail();
 
 // ---- month-end EUR to ILS rates ---------------------------------------------
@@ -73,7 +100,9 @@ const fx = readJson(fxPath, {});
 const today = new Date().toISOString().slice(0, 10);
 const months = [...byMonth.values()].sort((a, b) => a.month.localeCompare(b.month));
 
-for (const m of months) {
+// Bills in a month with no statement yet get that month's rate too.
+const billOnly = [...new Set(bills.map((b) => b.month))].filter((k) => !byMonth.has(k)).map((month) => ({ month }));
+for (const m of [...months, ...billOnly]) {
   if (fx[m.month]) { m.fx = fx[m.month]; continue; }
   const [y, mo] = m.month.split('-').map(Number);
   const monthEnd = new Date(Date.UTC(y, mo, 0)).toISOString().slice(0, 10);
@@ -91,13 +120,14 @@ for (const m of months) {
     warnings.push(`Could not fetch the EUR/ILS rate for ${m.month} (${e.message}). Shekel figures for that month use the nearest known rate until the next run.`);
   }
 }
+for (const b of bills) b.fx = (byMonth.get(b.month) || billOnly.find((x) => x.month === b.month)).fx || null;
 fs.writeFileSync(fxPath, JSON.stringify(Object.fromEntries(Object.entries(fx).sort()), null, 2) + '\n');
 
 // ---- write data.json (keep the timestamp when nothing changed) ---------------
 const dataPath = path.join(ROOT, 'data.json');
 const previous = readJson(dataPath, null);
-const payload = { config, months };
-const unchanged = previous && JSON.stringify({ config: previous.config, months: previous.months }) === JSON.stringify(payload);
+const payload = { config, months, bills };
+const unchanged = previous && JSON.stringify({ config: previous.config, months: previous.months, bills: previous.bills || [] }) === JSON.stringify(payload);
 const out = { generatedAt: unchanged ? previous.generatedAt : new Date().toISOString(), ...payload };
 fs.writeFileSync(dataPath, JSON.stringify(out, null, 2) + '\n');
 
@@ -107,8 +137,9 @@ const lines = months.map((m) => {
   return `  ${m.month}  owner payment €${m.ownerPayment.toFixed(2)}  ${m.fx ? '1 EUR = ' + m.fx.rate + ' ILS' : 'no rate'}  ${m.source}${flags}`;
 });
 console.log(`Built data.json with ${months.length} month(s):\n${lines.join('\n')}`);
+if (bills.length) console.log(`and ${bills.length} bill(s):\n` + bills.map((b) => `  ${b.month}  ${b.type}  €${b.amount.toFixed(2)}  ${b.paid ? 'paid' : 'not paid'}  ${b.file}`).join('\n'));
 warnings.forEach((w) => console.log(`${process.env.GITHUB_ACTIONS ? '::warning::' : 'Warning: '}${w}`));
-summary(`### Dashboard data built\n\n${months.length} month(s) published.\n\n` + (warnings.length ? '**Warnings**\n\n' + warnings.map((w) => `- ${w}`).join('\n') : ''));
+summary(`### Dashboard data built\n\n${months.length} month(s) and ${bills.length} bill(s) published.\n\n` + (warnings.length ? '**Warnings**\n\n' + warnings.map((w) => `- ${w}`).join('\n') : ''));
 
 function fail() {
   console.error('\nThe dashboard was NOT updated. Fix the following and upload again:\n');
