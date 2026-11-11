@@ -33,6 +33,40 @@ Rules for the file:
 You can check a file before publishing with the "Preview a file" box at the bottom of the dashboard.
 The preview stays in your browser only.
 
+## Bills
+
+Electricity, water and other bills that the partners pay themselves, outside the manager's statement,
+go in the `bills` folder, one JSON file per bill. The dashboard shows them in "Utility bills" and in the
+partner split, as "net after bills" (owner payment minus the bills). The owner payment itself is never changed.
+A bill counts in the month it was issued, even when that month has no statement yet.
+
+To add one: open the `bills` folder on GitHub, "Add file", "Create new file", name it for example
+`2026-12-electricity.json` (add `-2` for a second bill of the same type in a month), paste this and edit it:
+
+    {
+      "month": "2026-11",
+      "type": "electricity",
+      "amount": 136.75,
+      "issueDate": "2026-11-03",
+      "period": "14/09/2026–14/10/2026",
+      "dueDate": "2026-11-12",
+      "paid": true,
+      "paidBy": "Guy Ziv",
+      "paidDate": "2026-11-04",
+      "reference": "RF199010580000100854023O3",
+      "note": ""
+    }
+
+- `month` (required): the month the bill counts in, `YYYY-MM`. Use the month it was issued.
+- `type` (required): `electricity`, `water` or `other`.
+- `amount` (required): euros, a plain number.
+- `paid` (required): `true` or `false`.
+- Optional: `issueDate`, `dueDate`, `paidDate` as `YYYY-MM-DD`; `period`, `paidBy`, `reference`, `note` as free text.
+  Leave out or use `""` for anything unknown.
+
+A file that cannot be read stops the update and GitHub emails the reason, as with statements.
+To correct a bill, edit its file; to remove one, delete it.
+
 ## How it works
 
 | Path | Purpose |
@@ -40,9 +74,10 @@ The preview stays in your browser only.
 | `index.html` | The dashboard |
 | `reports/` | The manager's xlsx statements, one per month |
 | `manual/` | Months entered by hand as JSON (April 2026 came as a PDF). A manual month wins over an xlsx for the same month |
+| `bills/` | Utility bills paid separately from the statement (electricity, water), one JSON file per bill |
 | `config.json` | Property name, partners and their shares |
 | `js/parser.js` | Reads a statement. Used by both the build and the in-browser preview |
-| `scripts/build.mjs` | Builds `data.json` from `reports/` and `manual/` |
+| `scripts/build.mjs` | Builds `data.json` from `reports/`, `manual/` and `bills/` |
 | `fx.json` | Month-end euro to shekel rates, fetched once per month and then frozen |
 | `data.json` | Generated. Do not edit |
 | `.github/workflows/publish.yml` | Runs the build and publishes the site on every change |

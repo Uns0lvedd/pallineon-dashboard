@@ -190,6 +190,14 @@
     </div>
   </div>
 
+  <div class="section"><h2 data-t="billsTitle"></h2><p class="sub" data-t="billsSub"></p></div>
+  <div class="card partner" id="billsSummary" style="margin-bottom:12px"></div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="tablewrap"><table id="billsTable"></table></div>
+    <div class="empty" id="billsEmpty" hidden></div>
+    <p class="sub" id="billsNote" style="margin-top:10px"></p>
+  </div>
+
   <div class="section"><h2 data-t="statementTitle"></h2><p class="sub" data-t="statementSub"></p></div>
   <div class="card" style="margin-bottom:12px">
     <div class="cardhead"><div></div><button class="btn" id="csvBtn"></button></div>
@@ -260,6 +268,12 @@ var T = {
     share: 'Share', thisPeriod: 'Selected period', yearToDate: 'Year to date {y}', allTime: 'All time', avgMonth: 'Monthly average',
     cumTitle: 'Cumulative owner payment', cumSub: 'Running total since the first statement', total: 'Total', eachPartner: 'Each partner',
     partnerTableTitle: 'Split by month', partnerTableSub: 'Every month on record',
+    billsTitle: 'Utility bills', billsSub: 'Electricity and water paid separately, outside the manager\'s statement. Each bill counts in the month it was issued.',
+    bills: 'Bills', netAfterBills: 'Net after bills', afterBills: '{p} after bills', billMonth: 'Bill month', billType: 'Type',
+    type_electricity: 'Electricity', type_water: 'Water', type_other: 'Other', issued: 'Issued', billPeriod: 'Period', due: 'Due', status: 'Status',
+    paid: 'Paid', unpaid: 'Not paid', paidBy: 'Paid by {n}', reference: 'Reference', noStatement: 'no statement yet', noBills: 'No bills recorded yet.',
+    billsPending: '{n} bill(s) totalling {v} are from months that have no statement yet. They count in the all-time totals.',
+    billsHow: 'To add a bill, add a JSON file to the <code>bills</code> folder of the repository (see the README).',
     statementTitle: 'Monthly statement', statementSub: 'Every line of every statement. Click a row to select that month.', exportCsv: 'Export CSV',
     month: 'Month', rate: '₪ per €', nightsCol: 'Nights', nightlyRate: 'Nightly rate',
     faultsTitle: 'Improvements and faults', faultsSub: 'Repair and upgrade charges with the manager\'s notes', amount: 'Amount', note: 'Note', noFaults: 'No improvement or fault charges so far.',
@@ -300,6 +314,12 @@ var T = {
     share: 'חלק', thisPeriod: 'התקופה שנבחרה', yearToDate: 'מתחילת {y}', allTime: 'כל התקופה', avgMonth: 'ממוצע חודשי',
     cumTitle: 'תשלום מצטבר לבעלים', cumSub: 'סכום מצטבר מאז הדוח הראשון', total: 'סה״כ', eachPartner: 'כל שותף',
     partnerTableTitle: 'חלוקה לפי חודש', partnerTableSub: 'כל החודשים שנרשמו',
+    billsTitle: 'חשבונות שוטפים', billsSub: 'חשמל ומים שמשולמים בנפרד, מחוץ לדוח של חברת הניהול. כל חשבון נספר בחודש שבו הוא הונפק.',
+    bills: 'חשבונות', netAfterBills: 'נטו אחרי חשבונות', afterBills: '{p} אחרי חשבונות', billMonth: 'חודש החשבון', billType: 'סוג',
+    type_electricity: 'חשמל', type_water: 'מים', type_other: 'אחר', issued: 'הונפק', billPeriod: 'תקופה', due: 'לתשלום עד', status: 'סטטוס',
+    paid: 'שולם', unpaid: 'לא שולם', paidBy: 'שולם ע״י {n}', reference: 'אסמכתא', noStatement: 'אין עדיין דוח', noBills: 'עדיין לא נרשמו חשבונות.',
+    billsPending: '{n} חשבונות בסך {v} שייכים לחודשים שעדיין אין להם דוח. הם נכללים בסיכומי כל התקופה.',
+    billsHow: 'כדי להוסיף חשבון, מוסיפים קובץ JSON לתיקייה <code>bills</code> במאגר (הסבר ב-README).',
     statementTitle: 'דוח חודשי', statementSub: 'כל השורות מכל הדוחות. לחיצה על שורה בוחרת את החודש.', exportCsv: 'ייצוא CSV',
     month: 'חודש', rate: '₪ ל-€', nightsCol: 'לילות', nightlyRate: 'מחיר ללילה',
     faultsTitle: 'שיפורים ותקלות', faultsSub: 'חיובי תיקונים ושדרוגים עם הערות חברת הניהול', amount: 'סכום', note: 'הערה', noFaults: 'אין עד כה חיובים על שיפורים או תקלות.',
@@ -342,6 +362,12 @@ T.el = {
   share: 'Μερίδιο', thisPeriod: 'Επιλεγμένη περίοδος', yearToDate: 'Από αρχή του {y}', allTime: 'Όλη η περίοδος', avgMonth: 'Μηνιαίος μέσος όρος',
   cumTitle: 'Σωρευτική πληρωμή ιδιοκτήτη', cumSub: 'Τρέχον σύνολο από την πρώτη εκκαθάριση', total: 'Σύνολο', eachPartner: 'Κάθε συνεταίρος',
   partnerTableTitle: 'Κατανομή ανά μήνα', partnerTableSub: 'Όλοι οι καταγεγραμμένοι μήνες',
+  billsTitle: 'Λογαριασμοί κοινής ωφέλειας', billsSub: 'Ρεύμα και νερό που πληρώνονται χωριστά, εκτός της εκκαθάρισης του διαχειριστή. Κάθε λογαριασμός μετρά στον μήνα έκδοσής του.',
+  bills: 'Λογαριασμοί', netAfterBills: 'Καθαρό μετά τους λογαριασμούς', afterBills: '{p} μετά τους λογαριασμούς', billMonth: 'Μήνας λογαριασμού', billType: 'Είδος',
+  type_electricity: 'Ρεύμα', type_water: 'Νερό', type_other: 'Άλλο', issued: 'Έκδοση', billPeriod: 'Περίοδος', due: 'Λήξη', status: 'Κατάσταση',
+  paid: 'Πληρώθηκε', unpaid: 'Απλήρωτος', paidBy: 'Πληρώθηκε από {n}', reference: 'Κωδικός', noStatement: 'χωρίς εκκαθάριση ακόμη', noBills: 'Δεν έχουν καταχωριστεί λογαριασμοί ακόμη.',
+  billsPending: '{n} λογαριασμοί συνολικά {v} αφορούν μήνες χωρίς εκκαθάριση ακόμη. Μετρούν στα σύνολα όλης της περιόδου.',
+  billsHow: 'Για να προσθέσετε λογαριασμό, προσθέστε ένα αρχείο JSON στον φάκελο <code>bills</code> του αποθετηρίου (δείτε το README).',
   statementTitle: 'Μηνιαία εκκαθάριση', statementSub: 'Όλες οι γραμμές κάθε εκκαθάρισης. Κάντε κλικ σε μια γραμμή για να επιλέξετε τον μήνα.', exportCsv: 'Εξαγωγή CSV',
   month: 'Μήνας', rate: '₪ ανά €', nightsCol: 'Νύχτες', nightlyRate: 'Τιμή ανά νύχτα',
   faultsTitle: 'Βελτιώσεις και βλάβες', faultsSub: 'Χρεώσεις επισκευών και αναβαθμίσεων με τις σημειώσεις του διαχειριστή', amount: 'Ποσό', note: 'Σημείωση', noFaults: 'Δεν υπάρχουν μέχρι τώρα χρεώσεις για βελτιώσεις ή βλάβες.',
@@ -447,6 +473,21 @@ function scopeMonths() {
   if (S.scope === 'ytd') return MONTHS.filter(function (m) { return m.month.slice(0, 4) === S.month.slice(0, 4) && m.month <= S.month; });
   return MONTHS.filter(function (m) { return m.month === S.month; });
 }
+/* Utility bills: paid outside the statement, counted in the month they were issued.
+   They may belong to a month that has no statement yet; such bills still count in the
+   all-time totals, and in the year to date when the latest statement month is selected. */
+function allBills() { return (DATA && DATA.bills) || []; }
+function billRate(b) { return S.cur === 'ILS' ? ((b.fx && b.fx.rate) ? b.fx : fxOf(find(b.month) || { month: b.month })).rate : 1; }
+function billSum(list) { return list.reduce(function (s, b) { return s + b.amount * billRate(b); }, 0); }
+function billsFor(scope) {
+  var latest = MONTHS[MONTHS.length - 1].month, y = S.month.slice(0, 4);
+  return allBills().filter(function (b) {
+    if (scope === 'all') return true;
+    if (scope === 'month') return b.month === S.month;
+    return b.month.slice(0, 4) === y && (b.month <= S.month || S.month === latest);
+  });
+}
+function scopeBills() { return billsFor(S.scope); }
 function periodLabel() {
   var l = scopeMonths();
   if (S.scope === 'month' || l.length === 1) return mLabel(l[0].month, 'long');
@@ -673,20 +714,25 @@ function renderPartners() {
   var year = S.month.slice(0, 4), ytd = agg(MONTHS.filter(function (m) { return m.month.slice(0, 4) === year && m.month <= S.month; }));
   $('partnersSub').textContent = t('partnersSub', { p: periodLabel() });
   var equal = partners.every(function (p) { return Math.abs(p.share - partners[0].share) < 1e-9; });
+  var hasBills = allBills().length > 0, netCur = cur.ownerPayment - billSum(scopeBills()), netYtd = ytd.ownerPayment - billSum(billsFor('ytd')), netAll = all.ownerPayment - billSum(allBills());
   $('partners').className = 'partners' + (equal ? ' one' : '');
   if (equal) { // identical shares: one card instead of repeating the same numbers per partner
     var sh = partners[0].share, stat = function (k, v, big) { return '<div><div class="k">' + esc(k) + '</div><div class="v' + (big ? ' big' : '') + '"><bdi>' + v + '</bdi></div></div>'; };
     $('partners').innerHTML = '<div class="card partner"><div class="name">' + esc(t('eachPartner')) + ' <span class="muted" style="font-weight:400">· ' + pct(sh, 2) + '</span></div>' +
       '<div class="sub">' + esc(t('splitBetween', { names: partners.map(pName).join(', ') })) + '</div><div class="stats">' +
       stat(periodLabel(), money(cur.ownerPayment * sh), true) + stat(t('yearToDate', { y: year }), money(ytd.ownerPayment * sh)) +
-      stat(t('allTime'), money(all.ownerPayment * sh)) + stat(t('avgMonth'), money(all.n ? all.ownerPayment * sh / all.n : NaN)) + '</div></div>';
+      stat(t('allTime'), money(all.ownerPayment * sh)) + stat(t('avgMonth'), money(all.n ? all.ownerPayment * sh / all.n : NaN)) + '</div>' +
+      (hasBills ? '<div class="stats">' + stat(t('afterBills', { p: periodLabel() }), money(netCur * sh), true) + stat(t('afterBills', { p: t('yearToDate', { y: year }) }), money(netYtd * sh)) +
+      stat(t('afterBills', { p: t('allTime') }), money(netAll * sh)) + stat(t('afterBills', { p: t('avgMonth') }), money(all.n ? netAll * sh / all.n : NaN)) + '</div>' : '') + '</div>';
   } else
   $('partners').innerHTML = partners.map(function (p) {
     return '<div class="card partner"><div class="name">' + esc(pName(p)) + ' <span class="muted" style="font-weight:400">· ' + pct(p.share, 2) + '</span></div>' +
       '<div class="value"><bdi>' + money(cur.ownerPayment * p.share) + '</bdi></div><div class="sub">' + esc(periodLabel()) + '</div><dl>' +
       '<dt>' + esc(t('yearToDate', { y: year })) + '</dt><dd><bdi>' + money(ytd.ownerPayment * p.share) + '</bdi></dd>' +
       '<dt>' + esc(t('allTime')) + '</dt><dd><bdi>' + money(all.ownerPayment * p.share) + '</bdi></dd>' +
-      '<dt>' + esc(t('avgMonth')) + '</dt><dd><bdi>' + money(all.n ? all.ownerPayment * p.share / all.n : NaN) + '</bdi></dd></dl></div>';
+      '<dt>' + esc(t('avgMonth')) + '</dt><dd><bdi>' + money(all.n ? all.ownerPayment * p.share / all.n : NaN) + '</bdi></dd>' +
+      (hasBills ? '<dt>' + esc(t('afterBills', { p: periodLabel() })) + '</dt><dd><bdi>' + money(netCur * p.share) + '</bdi></dd>' +
+      '<dt>' + esc(t('afterBills', { p: t('allTime') })) + '</dt><dd><bdi>' + money(netAll * p.share) + '</bdi></dd>' : '') + '</dl></div>';
   }).join('');
 
 
@@ -702,11 +748,18 @@ function renderPartners() {
   draw('cumChart', { type: 'line', plugins: [endLabels], options: o, data: { labels: keys.map(function (k) { return mLabel(k, 'axis'); }), datasets: sets } });
 
   var cols = equal ? [{ name: { en: t('eachPartner') }, share: partners[0].share }] : partners;
-  var head = '<thead><tr><th>' + esc(t('month')) + '</th><th>' + esc(t('total')) + '</th>' + cols.map(function (p) { return '<th>' + esc(pName(p)) + '</th>'; }).join('') + '</tr></thead>';
-  var body = MONTHS.slice().reverse().map(function (m) { var a = agg([m]);
-    return '<tr data-month="' + m.month + '" class="' + (inScope(m) ? 'sel' : '') + '"><td>' + esc(mLabel(m.month)) + '</td><td><bdi>' + money(a.ownerPayment) + '</bdi></td>' +
-      cols.map(function (p) { return '<td><bdi>' + money(a.ownerPayment * p.share) + '</bdi></td>'; }).join('') + '</tr>'; }).join('');
-  var foot = '<tfoot><tr><td>' + esc(t('total')) + '</td><td><bdi>' + money(all.ownerPayment) + '</bdi></td>' + cols.map(function (p) { return '<td><bdi>' + money(all.ownerPayment * p.share) + '</bdi></td>'; }).join('') + '</tr></tfoot>';
+  var head = '<thead><tr><th>' + esc(t('month')) + '</th><th>' + esc(t('total')) + '</th>' + cols.map(function (p) { return '<th>' + esc(pName(p)) + '</th>'; }).join('') +
+    (hasBills ? '<th>' + esc(t('bills')) + '</th><th>' + esc(t('netAfterBills')) + '</th>' + cols.map(function (p) { return '<th>' + esc(t('afterBills', { p: pName(p) })) + '</th>'; }).join('') : '') + '</tr></thead>';
+  var rowKeys = MONTHS.map(function (m) { return m.month; });
+  allBills().forEach(function (b) { if (rowKeys.indexOf(b.month) < 0) rowKeys.push(b.month); });
+  rowKeys.sort().reverse();
+  var body = rowKeys.map(function (k) { var m = find(k), owner = m ? agg([m]).ownerPayment : NaN, bl = allBills().filter(function (b) { return b.month === k; });
+    var bsum = billSum(bl), net = (m ? owner : 0) - bsum, sel = m ? inScope(m) : scopeBills().some(function (b) { return b.month === k; });
+    return '<tr' + (m ? ' data-month="' + k + '"' : '') + ' class="' + (sel ? 'sel' : '') + '"><td>' + esc(mLabel(k)) + (m ? '' : ' <span class="muted">· ' + esc(t('noStatement')) + '</span>') + '</td><td><bdi>' + money(owner) + '</bdi></td>' +
+      cols.map(function (p) { return '<td><bdi>' + money(owner * p.share) + '</bdi></td>'; }).join('') +
+      (hasBills ? '<td><bdi>' + (bl.length ? money(bsum) : '–') + '</bdi></td><td><bdi>' + money(net) + '</bdi></td>' + cols.map(function (p) { return '<td><bdi>' + money(net * p.share) + '</bdi></td>'; }).join('') : '') + '</tr>'; }).join('');
+  var foot = '<tfoot><tr><td>' + esc(t('total')) + '</td><td><bdi>' + money(all.ownerPayment) + '</bdi></td>' + cols.map(function (p) { return '<td><bdi>' + money(all.ownerPayment * p.share) + '</bdi></td>'; }).join('') +
+    (hasBills ? '<td><bdi>' + money(billSum(allBills())) + '</bdi></td><td><bdi>' + money(netAll) + '</bdi></td>' + cols.map(function (p) { return '<td><bdi>' + money(netAll * p.share) + '</bdi></td>'; }).join('') : '') + '</tr></tfoot>';
   $('partnerTable').innerHTML = head + '<tbody>' + body + '</tbody>' + foot;
 }
 function inScope(m) { return scopeMonths().indexOf(m) >= 0; }
@@ -745,6 +798,31 @@ function renderFaults() {
     if (x.improvements) rows.push('<tr><td>' + esc(mLabel(m.month)) + '</td><td><bdi>' + money(x.improvements * (S.cur === 'ILS' ? fxOf(m).rate : 1)) + '</bdi></td><td class="text" dir="auto">' + esc(x.note || '–') + '</td></tr>'); }); });
   $('faultsTable').hidden = !rows.length; $('faultsEmpty').hidden = !!rows.length; $('faultsEmpty').textContent = t('noFaults');
   $('faultsTable').innerHTML = '<thead><tr><th>' + esc(t('month')) + '</th><th>' + esc(t('amount')) + '</th><th class="text">' + esc(t('note')) + '</th></tr></thead><tbody>' + rows.join('') + '</tbody>';
+}
+function renderBills() {
+  var list = allBills(), partners = DATA.config.partners, inSc = scopeBills();
+  var equal = partners.every(function (p) { return Math.abs(p.share - partners[0].share) < 1e-9; });
+  var stat = function (k, v, big) { return '<div><div class="k">' + esc(k) + '</div><div class="v' + (big ? ' big' : '') + '"><bdi>' + v + '</bdi></div></div>'; };
+  var block = function (label, owner, bsum) { var net = owner - bsum;
+    var shares = equal ? stat(t('afterBills', { p: t('eachPartner') }) + ' · ' + pct(partners[0].share, 2), money(net * partners[0].share))
+      : partners.map(function (p) { return stat(t('afterBills', { p: pName(p) }), money(net * p.share)); }).join('');
+    return '<div class="name" style="margin-top:6px">' + esc(label) + '</div><div class="stats" style="margin-top:4px;margin-bottom:10px">' + stat(t('ownerPayment'), money(owner)) + stat(t('bills'), money(bsum)) +
+      stat(t('netAfterBills'), money(net), true) + shares + '</div>'; };
+  $('billsSummary').innerHTML = block(periodLabel(), agg(scopeMonths()).ownerPayment, billSum(inSc)) + block(t('allTime'), agg(MONTHS).ownerPayment, billSum(list));
+  $('billsSummary').hidden = !list.length;
+  var status = function (b) { if (!b.paid) return '<span style="color:var(--down)">' + esc(t('unpaid')) + '</span>';
+    return esc(b.paidBy ? t('paidBy', { n: b.paidBy }) : t('paid')) + (b.paidDate ? ' · <bdi>' + esc(dLabel(b.paidDate)) + '</bdi>' : ''); };
+  var rows = list.slice().reverse().map(function (b) { var m = find(b.month);
+    var note = [b.reference ? t('reference') + ': ' + b.reference : '', b.note || ''].filter(Boolean).join(' · ');
+    return '<tr' + (m ? ' data-month="' + b.month + '"' : '') + ' class="' + (inSc.indexOf(b) >= 0 ? 'sel' : '') + '"><td>' + esc(mLabel(b.month)) + (m ? '' : ' <span class="muted">· ' + esc(t('noStatement')) + '</span>') + '</td>' +
+      '<td class="text">' + esc(t('type_' + b.type)) + '</td><td><bdi>' + (b.issueDate ? esc(dLabel(b.issueDate)) : '–') + '</bdi></td><td><bdi>' + esc(b.period || '–') + '</bdi></td>' +
+      '<td><bdi>' + (b.dueDate ? esc(dLabel(b.dueDate)) : '–') + '</bdi></td><td><bdi>' + money(b.amount * billRate(b)) + '</bdi></td><td class="text">' + status(b) + '</td>' +
+      '<td class="text" dir="auto">' + esc(note || '–') + '</td></tr>'; });
+  $('billsTable').hidden = !list.length; $('billsEmpty').hidden = !!list.length; $('billsEmpty').textContent = t('noBills');
+  $('billsTable').innerHTML = '<thead><tr><th>' + esc(t('billMonth')) + '</th><th class="text">' + esc(t('billType')) + '</th><th>' + esc(t('issued')) + '</th><th>' + esc(t('billPeriod')) + '</th><th>' + esc(t('due')) + '</th><th>' + esc(t('amount')) + '</th><th class="text">' + esc(t('status')) + '</th><th class="text">' + esc(t('note')) + '</th></tr></thead>' +
+    '<tbody>' + rows.join('') + '</tbody>' + (list.length ? '<tfoot><tr><td>' + esc(t('total')) + '</td><td></td><td></td><td></td><td></td><td><bdi>' + money(billSum(list)) + '</bdi></td><td></td><td></td></tr></tfoot>' : '');
+  var pending = list.filter(function (b) { return !find(b.month); });
+  $('billsNote').innerHTML = (pending.length ? esc(t('billsPending', { n: pending.length, v: money(billSum(pending)) })) + ' ' : '') + t('billsHow');
 }
 function median(a) { var s = a.slice().sort(function (x, y) { return x - y; }), n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : NaN; }
 function renderChecks() {
@@ -817,7 +895,7 @@ function renderLabelToggles() {
 }
 function render() {
   if (!find(S.month)) S.month = MONTHS[MONTHS.length - 1].month;
-  renderChrome(); renderKpis(); renderWaterfall(); renderStack(); renderTrend(); renderPlatforms(); renderPartners(); renderStatement(); renderFaults(); renderChecks(); renderLabelToggles();
+  renderChrome(); renderKpis(); renderWaterfall(); renderStack(); renderTrend(); renderPlatforms(); renderPartners(); renderBills(); renderStatement(); renderFaults(); renderChecks(); renderLabelToggles();
 }
 function rebuildMonths() {
   MONTHS = PUBLISHED.slice();
