@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-02T22:33:03.380Z",
+  "generatedAt": "2026-11-11T17:47:52.831Z",
   "config": {
     "propertyName": {
       "en": "Pallineon · Room 1",
@@ -334,6 +334,73 @@
       "fx": {
         "rate": 3.4647,
         "date": "2026-08-31",
+        "source": "ECB"
+      }
+    },
+    {
+      "month": "2026-09",
+      "source": "PALLINEON_R_1_SEPTEMBER_2026.xlsx",
+      "rates": {
+        "envFeePerNight": 8,
+        "vat": 0.13,
+        "cityTax": 0.0075,
+        "mgmtFee": 0.2,
+        "cleaningPerOrder": 35,
+        "commission": {
+          "airbnb": 0.155,
+          "booking": 0.166
+        }
+      },
+      "platforms": {
+        "airbnb": {
+          "gross": 2377,
+          "commission": 368.44,
+          "netOfCommission": 2008.57,
+          "nights": 23,
+          "envFee": 184,
+          "afterFee": 1824.57,
+          "vat": 237.19,
+          "cityTax": 13.68,
+          "mgmtFee": 359.71,
+          "orders": 6,
+          "cleaning": 210,
+          "internet": 28.9,
+          "improvements": 0,
+          "ownerPayment": 975.07,
+          "label": "AIRBNB"
+        },
+        "booking": {
+          "gross": 0,
+          "commission": 0,
+          "netOfCommission": 0,
+          "nights": 0,
+          "envFee": 0,
+          "afterFee": 0,
+          "vat": 0,
+          "cityTax": 0,
+          "mgmtFee": 0,
+          "orders": 0,
+          "cleaning": 0,
+          "internet": 0,
+          "improvements": 0,
+          "ownerPayment": 0,
+          "label": "Booking"
+        }
+      },
+      "statedTotal": 975.07,
+      "warnings": [],
+      "ownerPayment": 975.07,
+      "checks": [
+        {
+          "platform": "airbnb",
+          "field": "ownerPayment",
+          "stated": 975.07,
+          "expected": 975.09
+        }
+      ],
+      "fx": {
+        "rate": 3.4901,
+        "date": "2026-09-30",
         "source": "ECB"
       }
     }
