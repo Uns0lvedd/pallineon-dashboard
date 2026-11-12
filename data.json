@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T17:47:52.831Z",
+  "generatedAt": "2026-11-12T23:54:12.323Z",
   "config": {
     "propertyName": {
       "en": "Pallineon · Room 1",
@@ -403,6 +403,42 @@
         "date": "2026-09-30",
         "source": "ECB"
       }
+    }
+  ],
+  "bills": [
+    {
+      "file": "bills/2026-10-electricity.json",
+      "month": "2026-10",
+      "type": "electricity",
+      "amount": 247.47,
+      "issueDate": "2026-10-16",
+      "period": null,
+      "dueDate": null,
+      "paid": true,
+      "paidBy": null,
+      "paidDate": null,
+      "reference": null,
+      "note": null,
+      "fx": {
+        "rate": 3.495,
+        "date": "2026-10-30",
+        "source": "ECB"
+      }
+    },
+    {
+      "file": "bills/2026-11-electricity.json",
+      "month": "2026-11",
+      "type": "electricity",
+      "amount": 136.75,
+      "issueDate": "2026-11-03",
+      "period": "14/09/2026–14/10/2026",
+      "dueDate": "2026-11-12",
+      "paid": true,
+      "paidBy": "Guy Ziv",
+      "paidDate": "2026-11-04",
+      "reference": "RF199010580000100854023O3",
+      "note": null,
+      "fx": null
     }
   ]
 }
